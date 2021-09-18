@@ -14,7 +14,14 @@
   "main": "background.js",
   "dependencies": {
     "core-js": "^3.6.5",
-    "vue": "^3.0.0"
+    "element-plus": "^1.1.0-beta.12",
+    "less": "^4.1.1",
+    "less-loader": "7",
+    "sass-resources-loader": "^2.2.4",
+    "vue": "^3.0.0",
+    "vue-cookies": "^1.7.4",
+    "vue-router": "4",
+    "vuex": "^4.0.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

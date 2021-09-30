@@ -4,7 +4,7 @@ import router from './router'
 // 引入ElementPlus
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-
+import '@/assets/css/normalize.css'
 
 import App from './App.vue'
 

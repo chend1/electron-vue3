@@ -34,7 +34,6 @@
             class="icon"
             viewBox="0 0 1024 1024"
             version="1.1"
-            xmlns="http://www.w3.org/2000/svg"
             p-id="5135"
             width="30"
             height="30"
@@ -73,8 +72,9 @@
 
 <script>
 // 引入cookies
-import { getCookie, setCookie, delCookie } from '@/assets/js/utils.js'
+// import { getCookie, setCookie, delCookie } from '@/assets/js/utils.js'
 import { reactive, ref, toRefs } from 'vue'
+import { useRouter } from 'vue-router'
 export default {
   name: 'Login',
   setup() {
@@ -83,13 +83,12 @@ export default {
     let data = reactive({
       loginLoading: false,
       ruleForm: {
-        account: '',
-        password: '',
+        account: 'admin',
+        password: '123456',
       },
     })
     // 登录验证
     let validateAccount = (rule, value, callback) => {
-      console.log(1111)
       if (value === '') {
         callback(new Error('请输入账号'))
       } else {
@@ -107,7 +106,6 @@ export default {
       }
     }
     let validatePass = (rule, value, callback) => {
-      console.log(1111)
       if (value === '') {
         callback(new Error('请输入密码'))
       } else {
@@ -126,20 +124,26 @@ export default {
       account: [{ validator: validateAccount, trigger: 'blur' }],
       password: [{ validator: validatePass, trigger: 'blur' }],
     }
+    // 获取路由
+    const router = useRouter()
     // 登录方法
     function loginClick() {
       formRef.value.validate( (valid) => {
         if(valid){
-          console.log(22222222);
-          // localStorage.setItem('token','123456');
-          // console.log(localStorage.getItem('token'));
-          setCookie('token','123123558548615')
-          setTimeout(()=> {
-            let res = getCookie('token');
-            console.log(res);
-            delCookie('token')
-            console.log(getCookie('token'));
-          },1000)
+          // console.log(22222222);
+          // // localStorage.setItem('token','123456');
+          // // console.log(localStorage.getItem('token'));
+          // setCookie('token','123123558548615')
+          // setTimeout(()=> {
+          //   let res = getCookie('token');
+          //   console.log(res);
+          //   delCookie('token')
+          //   console.log(getCookie('token'));
+          // },1000)
+          console.log(222);
+          router.push({
+            path: '/chat'
+          })
         }
       })
     }

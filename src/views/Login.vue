@@ -75,6 +75,7 @@
 // import { getCookie, setCookie, delCookie } from '@/assets/js/utils.js'
 import { reactive, ref, toRefs } from 'vue'
 import { useRouter } from 'vue-router'
+import { login } from '@/api/login.js'
 export default {
   name: 'Login',
   setup() {
@@ -128,21 +129,17 @@ export default {
     const router = useRouter()
     // 登录方法
     function loginClick() {
-      formRef.value.validate( (valid) => {
-        if(valid){
-          // console.log(22222222);
-          // // localStorage.setItem('token','123456');
-          // // console.log(localStorage.getItem('token'));
-          // setCookie('token','123123558548615')
-          // setTimeout(()=> {
-          //   let res = getCookie('token');
-          //   console.log(res);
-          //   delCookie('token')
-          //   console.log(getCookie('token'));
-          // },1000)
-          console.log(222);
-          router.push({
-            path: '/chat'
+      formRef.value.validate((valid) => {
+        if (valid) {
+          console.log(222)
+          login({
+            name: data.ruleForm.account,
+            password: data.ruleForm.password,
+          }).then((res) => {
+            console.log(res)
+            router.push({
+              path: '/chat',
+            })
           })
         }
       })

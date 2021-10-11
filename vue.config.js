@@ -11,7 +11,7 @@ module.exports = {
     proxy: {
       '/api': {
         target: 'https://im.pltrue.top',
-        pathRewrite: { '^/api': '' },
+        pathRewrite: { '^/api': '/api' },
         changeOrigin: true,
         secure: true,
       },

@@ -1,49 +1,26 @@
 <template>
   <div class="group-list">
     <ul>
-      <li class="active">
+      <li
+        v-for="item in chatGroupList"
+        :key="item.id"
+        @click="groupClick(item)"
+        :class="{ active: isActive < 0 ? groupId === item.id : isActive === item.id }"
+      >
         <div class="photo">
           <div class="img">
-            <img src="@/assets/image/photo.jpg" alt="" />
-            <div class="point">1</div>
+            <img :src="item.group_avatar" alt="" />
+            <div class="point" v-if="pointData.length > 0">
+              {{ pointData.length }}
+            </div>
           </div>
         </div>
         <div class="user">
           <div class="top">
-            <div class="name">zhangsan</div>
-            <div class="time">19:56</div>
+            <div class="name">{{ item.group_name }}</div>
+            <div class="time">{{ item.send_time }}</div>
           </div>
-          <div class="msg">nihaoa</div>
-        </div>
-      </li>
-      <li>
-        <div class="photo">
-          <div class="img">
-            <img src="@/assets/image/photo.jpg" alt="" />
-            <div class="point">1</div>
-          </div>
-        </div>
-        <div class="user">
-          <div class="top">
-            <div class="name">zhangsan</div>
-            <div class="time">19:56</div>
-          </div>
-          <div class="msg">nihaoa</div>
-        </div>
-      </li>
-      <li>
-        <div class="photo">
-          <div class="img">
-            <img src="@/assets/image/photo.jpg" alt="" />
-            <div class="point">1</div>
-          </div>
-        </div>
-        <div class="user">
-          <div class="top">
-            <div class="name">zhangsan</div>
-            <div class="time">19:56</div>
-          </div>
-          <div class="msg">nihaoa</div>
+          <div class="msg">{{ item.send_msg }}</div>
         </div>
       </li>
     </ul>
@@ -53,14 +30,29 @@
 <script>
 import { reactive, toRefs } from '@vue/reactivity'
 export default {
-  emits: [],
-  setup() {
+  emits: ['groupClick'],
+  props: {
+    chatGroupList: {
+      type: Array,
+      default() {
+        return []
+      },
+    },
+    groupId: Number,
+  },
+  setup(prop, context) {
     let data = reactive({
-      searchData: '',
+      pointData: [],
+      isActive: -1,
     })
-
+    // 群聊点击
+    function groupClick(group) {
+      data.isActive = group.id
+      context.emit('groupClick', group)
+    }
     return {
       ...toRefs(data),
+      groupClick,
     }
   },
 }
@@ -68,6 +60,8 @@ export default {
 
 <style scoped lang="less">
 .group-list {
+  height: 740px;
+  overflow-y: auto;
   ul {
     padding: 15px 0;
     li {
@@ -76,9 +70,10 @@ export default {
       justify-content: space-between;
       align-items: center;
       box-sizing: border-box;
-      padding: 10px;
+      padding: 9.5px 10px;
       border-bottom: 1px solid #ddd;
-      &.active{
+      cursor: pointer;
+      &.active {
         background-color: #cbcbcb;
       }
       .photo {

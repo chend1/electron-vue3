@@ -24,16 +24,31 @@
         <Search></Search>
       </div>
       <div class="list">
-        <user-list v-show="isFriend"></user-list>
-        <group-list v-show="!isFriend"></group-list>
+        <user-list
+          v-show="isFriend"
+          :friendList="friendList"
+          :userId="userId"
+          @userClick="userClick"
+        ></user-list>
+        <group-list
+          v-show="!isFriend"
+          :chatGroupList="chatGroupList"
+          :groupId="groupId"
+          @groupClick="groupClick"
+        ></group-list>
       </div>
     </div>
     <div class="chat-msg">
       <div class="title">
-        <p>张三</p>
+        <p v-show="isFriend">{{ user.name }}</p>
+        <p v-show="!isFriend">{{ group.group_name }}</p>
       </div>
       <div class="message">
-        <chat-message :is-group="false"></chat-message>
+        <chat-message
+          :is-group="!isFriend"
+          :toId="isFriend ? toUserId : toGroupId"
+          :chatMsg="isFriend ? userChatMsg : groupChatMsg"
+        ></chat-message>
       </div>
       <div class="enter">
         <div class="enterType">
@@ -102,6 +117,9 @@ import UserList from '@/components/UserList.vue'
 import Search from '@/components/Search.vue'
 import ChatMessage from '@/components/ChatMessage.vue'
 import { reactive, toRefs } from '@vue/reactivity'
+import { onMounted } from '@vue/runtime-core'
+import { getUserList, getGroupList } from '@/api/list.js'
+import { getInformationHistory } from '@/api/message.js'
 export default {
   name: 'Chat',
   components: {
@@ -115,9 +133,30 @@ export default {
     let data = reactive({
       // 输入的信息
       enterMsg: '',
-      // 是否选择的好友列表
+      // 是否选择好友列表 true: 好友  false: 群聊
       isFriend: true,
+      // 好友列表
+      friendList: [],
+      // 群聊列表
+      chatGroupList: [],
+      // 选中的好友信息
+      user: [],
+      // 选中的群聊
+      group: [],
+      // 默认选中的用户
+      userId: 0,
+      // 默认选中的群聊
+      groupId: 0,
+      // 发送目标用户
+      toUserId: -1,
+      // 发送群聊
+      toGroupId: -1,
+      // 用户聊天信息
+      userChatMsg: [],
+      // 群聊信息
+      groupChatMsg: []
     })
+    // 列表点击事件
     function listSelect(id) {
       if (Number(id) === 1) {
         data.isFriend = true
@@ -127,9 +166,56 @@ export default {
         data.isFriend = false
       }
     }
+    // 获取列表
+    onMounted(() => {
+      // 获取好友列表
+      getUserList().then((res) => {
+        console.log(res)
+        data.friendList = res.data.list
+        data.user = res.data.list[0]
+        data.userId = data.user.id
+        data.toUserId = data.userId
+        // 获取聊天信息
+        getInformationHistory({
+          to_id: data.toUserId
+        }).then(res => {
+          console.log(res.data);
+          data.userChatMsg = res.data
+        })
+      })
+      // 获取群聊列表
+      getGroupList().then((res) => {
+        console.log(222, res.data)
+        data.chatGroupList = res.data
+        data.group = res.data[0]
+        data.groupId = data.group.id
+        data.toGroupId = data.group.id
+        // 获取聊天信息
+        getInformationHistory({
+          to_id: data.toGroupId
+        }).then(res => {
+          console.log(res.data);
+          data.groupChatMsg = res.data
+        })
+      })
+    })
+    // 用户点击事件
+    function userClick(user) {
+      console.log(user)
+      data.user = user
+    }
+    // 群聊点击事件
+    function groupClick(group) {
+      console.log(group)
+      data.group = group
+    }
+    console.log(data)
+
     return {
       ...toRefs(data),
       listSelect,
+      userClick,
+      groupClick,
     }
   },
 }
@@ -254,6 +340,10 @@ export default {
       }
     }
   }
+}
+.el-icon-user,
+.el-icon-setting {
+  color: #aaa;
 }
 ::-webkit-scrollbar {
   width: 6px; /*高宽分别对应横竖滚动条的尺寸*/

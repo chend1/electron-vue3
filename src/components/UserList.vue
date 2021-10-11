@@ -1,49 +1,26 @@
 <template>
   <div class="user-list">
     <ul>
-      <li>
+      <li
+        v-for="item in friendList"
+        :key="item.id"
+        @click="userClick(item)"
+        :class="{ active: isActive < 0 ? userId === item.id : isActive === item.id }"
+      >
         <div class="photo">
           <div class="img">
-            <img src="@/assets/image/photo.jpg" alt="" />
-            <div class="point">1</div>
+            <img :src="item.avatar" alt="" />
+            <div class="point" v-if="pointData.length > 0">
+              {{ pointData.length }}
+            </div>
           </div>
         </div>
         <div class="user">
           <div class="top">
-            <div class="name">用户1</div>
-            <div class="time">19:56</div>
+            <div class="name">{{ item.name }}</div>
+            <div class="time">{{ item.send_time }}</div>
           </div>
-          <div class="msg">nihaoa</div>
-        </div>
-      </li>
-      <li>
-        <div class="photo">
-          <div class="img">
-            <img src="@/assets/image/photo.jpg" alt="" />
-            <div class="point">1</div>
-          </div>
-        </div>
-        <div class="user">
-          <div class="top">
-            <div class="name">用户2</div>
-            <div class="time">19:56</div>
-          </div>
-          <div class="msg">nihaoa</div>
-        </div>
-      </li>
-      <li>
-        <div class="photo">
-          <div class="img">
-            <img src="@/assets/image/photo.jpg" alt="" />
-            <div class="point">1</div>
-          </div>
-        </div>
-        <div class="user">
-          <div class="top">
-            <div class="name">用户3</div>
-            <div class="time">19:56</div>
-          </div>
-          <div class="msg">nihaoa</div>
+          <div class="msg">{{ item.send_msg }}</div>
         </div>
       </li>
     </ul>
@@ -53,14 +30,29 @@
 <script>
 import { reactive, toRefs } from '@vue/reactivity'
 export default {
-  emits: [],
-  setup() {
+  emits: ['userClick'],
+  props: {
+    friendList: {
+      type: Array,
+      default() {
+        return []
+      },
+    },
+    userId: Number,
+  },
+  setup(props, context) {
     let data = reactive({
-      searchData: '',
+      pointData: [],
+      isActive: -1,
     })
-
+    // 好友点击事件
+    function userClick(user) {
+      data.isActive = user.id
+      context.emit('userClick', user)
+    }
     return {
       ...toRefs(data),
+      userClick,
     }
   },
 }
@@ -68,6 +60,8 @@ export default {
 
 <style scoped lang="less">
 .user-list {
+  height: 740px;
+  overflow-y: auto;
   ul {
     padding: 15px 0;
     li {
@@ -76,9 +70,10 @@ export default {
       justify-content: space-between;
       align-items: center;
       box-sizing: border-box;
-      padding: 10px;
+      padding: 9.5px 10px;
       border-bottom: 1px solid #ddd;
-      &.active{
+      cursor: pointer;
+      &.active {
         background-color: #cbcbcb;
       }
       .photo {

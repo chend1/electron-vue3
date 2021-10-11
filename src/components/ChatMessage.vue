@@ -1,8 +1,7 @@
 <template>
-  <div class="msg-list">
+  <div class="msg-list" v-if="toId !== -1">
     <ul :class="isGroup ? 'group' : ''">
-      <!-- <ul class="group"> -->
-      <li>
+      <li v-for="item in chatMsg" :key="item.id">
         <div class="photo">
           <img src="@/assets/image/photo.jpg" alt="" />
         </div>
@@ -37,14 +36,32 @@
 
 <script>
 import { reactive, toRefs } from '@vue/reactivity'
+import { onMounted } from '@vue/runtime-core'
+import { getInformationHistory } from '@/api/message.js'
 export default {
   emits: [],
-  props: { isGroup: Boolean },
-  setup() {
+  props: {
+    isGroup: Boolean,
+    toId: Number,
+    chatMsg: {
+      type: Array,
+      default() {
+        return []
+      },
+    },
+  },
+  setup(props) {
+    console.log(props)
     let data = reactive({
       searchData: '',
     })
-
+    onMounted(() => {
+      getInformationHistory({
+        to_id: props.toId,
+      }).then((res) => {
+        console.log(res)
+      })
+    })
     return {
       ...toRefs(data),
     }

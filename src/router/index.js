@@ -1,5 +1,5 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
-
+import store from '@/store'
 // 登录
 const Login = () => import('../views/Login.vue')
 // 聊天
@@ -14,6 +14,7 @@ const routes = [
   },
   {
     path: '/chat',
+    name: 'Chat',
     meta: {
       title: 'chat',
     },
@@ -21,6 +22,7 @@ const routes = [
   },
   {
     path: '/login',
+    name: 'Login',
     meta: {
       title: 'login',
     },
@@ -28,6 +30,7 @@ const routes = [
   },
   {
     path: '/video',
+    name: 'Video',
     meta: {
       title: 'video',
     },
@@ -39,6 +42,16 @@ const router = createRouter({
   // hash 模式
   history: createWebHashHistory(),
   routes,
+})
+// 全局路由守卫
+router.beforeEach((to, from, next) => {
+  if (to.fullPath !== '/login' && !store.state.token) {
+    next({
+      name: 'Login'
+    })
+  } else {
+    next()
+  }
 })
 
 export default router

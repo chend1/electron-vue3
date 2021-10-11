@@ -36,12 +36,12 @@ export default {
   .search-input{
     height: 30px;
     line-height: 30px;
-    /deep/ input{
+    :deep(input){
       line-height: 30px;
-      height: 30px;
+      height: 30px !important;
       width: 190px
     }
-    /deep/ span{
+    :deep(span){
       line-height: 30px;
       i{
         line-height: 30px;

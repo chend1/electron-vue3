@@ -1,32 +1,18 @@
 <template>
   <div class="msg-list" v-if="toId !== -1">
     <ul :class="isGroup ? 'group' : ''">
-      <li v-for="item in chatMsg" :key="item.id">
+      <li
+        v-for="item in chatMsg"
+        :key="item.id"
+        :class="{ own: userInfo ? item.user_id === userInfo.id : false }"
+      >
         <div class="photo">
           <img src="@/assets/image/photo.jpg" alt="" />
         </div>
         <div class="user">
-          <div class="name" v-if="isGroup">zhangsan</div>
+          <div class="name" v-if="isGroup">{{ item.user_id }}</div>
           <div class="msg">
-            <p>nihaoa</p>
-          </div>
-        </div>
-      </li>
-      <li>
-        <div class="photo"><img src="@/assets/image/photo.jpg" alt="" /></div>
-        <div class="user">
-          <div class="name">zhangsan</div>
-          <div class="msg">
-            <p>nihaoa</p>
-          </div>
-        </div>
-      </li>
-      <li class="own">
-        <div class="photo"><img src="@/assets/image/photo.jpg" alt="" /></div>
-        <div class="user">
-          <div class="name">zhangsan</div>
-          <div class="msg">
-            <p>nihaoa</p>
+            <p>{{ item.msg }}</p>
           </div>
         </div>
       </li>
@@ -35,35 +21,72 @@
 </template>
 
 <script>
-import { reactive, toRefs } from '@vue/reactivity'
-import { onMounted } from '@vue/runtime-core'
-import { getInformationHistory } from '@/api/message.js'
+import { computed, reactive, toRefs } from '@vue/reactivity'
+import { watch } from '@vue/runtime-core'
+import { useStore } from 'vuex'
+import { getInformationHistory, getGroupMessageList } from '@/api/message.js'
 export default {
   emits: [],
   props: {
-    isGroup: Boolean,
     toId: Number,
-    chatMsg: {
-      type: Array,
-      default() {
-        return []
-      },
-    },
   },
   setup(props) {
-    console.log(props)
+    // store
+    // console.log(props);
+    // const toId = toRef(props, 'toId')
+    // console.log(toId.value)
+    const store = useStore()
+
     let data = reactive({
-      searchData: '',
+      chatMsg: [],
+      chatType: !store.state.isGroup,
     })
-    onMounted(() => {
-      getInformationHistory({
-        to_id: props.toId,
-      }).then((res) => {
-        console.log(res)
-      })
-    })
+
+    // 聊天类型
+    const isGroup = computed(() => store.state.isGroup)
+    console.log(store.state.isGroup)
+    // 聊天消息
+    const userChatMsg = computed(() => store.state.userChatMsg)
+    const groupChatMsg = computed(() => store.state.groupChatMsg)
+    data.chatMsg = data.chatType ? userChatMsg : groupChatMsg
+    console.log(data.chatMsg)
+    watch(
+      () => store.state.isGroup,
+      (newVal, oldVal) => {
+        data.chatType = !newVal
+        data.chatMsg = data.chatType ? userChatMsg : groupChatMsg
+        console.log(newVal, oldVal)
+      }
+    )
+    watch(
+      () => props.toId,
+      (newVal, oldVal) => {
+        console.log(123, newVal, oldVal)
+        // 获取聊天信息
+        if (data.chatType) {
+          // 用户信息
+          getInformationHistory({
+            to_id: newVal,
+          }).then((res) => {
+            console.log(res.data)
+            store.commit('getUserChatMsg', res.data)
+          })
+        } else {
+          // 群聊信息
+          getGroupMessageList({
+            to_id: newVal,
+            channel_type: 2
+          }).then((res) => {
+            console.log(res.data)
+            store.commit('getGroupChatMsg', res.data)
+          })
+        }
+      }
+    )
     return {
       ...toRefs(data),
+      userInfo: computed(() => store.state.userInfo),
+      isGroup,
     }
   },
 }
@@ -80,15 +103,6 @@ export default {
       display: flex;
       justify-content: flex-start;
       margin-bottom: 10px;
-      &.own {
-        flex-direction: row-reverse;
-        .user {
-          text-align: right;
-          .msg {
-            margin-right: 10px;
-          }
-        }
-      }
       .photo {
         width: 40px;
         height: 40px;
@@ -111,8 +125,57 @@ export default {
           line-height: 30px;
           p {
             display: inline-block;
-            border: 1px solid #ddd;
             padding: 0 10px;
+            background-color: #e5e5e5;
+            border-radius: 2px;
+            position: relative;
+            max-width: 100%;
+            text-align: justify;
+            text-justify: newspaper;
+            word-break: break-all;
+            box-sizing: border-box;
+            &::before {
+              content: '';
+              display: block;
+              width: 10px;
+              height: 10px;
+              background-color: #e5e5e5;
+              position: absolute;
+              top: 10px;
+              left: -5px;
+              z-index: 999;
+              transform: rotate(-45deg);
+            }
+          }
+        }
+      }
+    }
+    li.own {
+      flex-direction: row-reverse;
+      .user {
+        text-align: right;
+        .msg {
+          margin-right: 10px;
+          p {
+            background-color: #b2e281;
+            border-radius: 2px;
+            position: relative;
+            &::before {
+              content: '';
+              display: none;
+            }
+            &::after {
+              content: '';
+              display: block;
+              width: 10px;
+              height: 10px;
+              background-color: #b2e281;
+              position: absolute;
+              top: 10px;
+              right: -5px;
+              z-index: 999;
+              transform: rotate(45deg);
+            }
           }
         }
       }

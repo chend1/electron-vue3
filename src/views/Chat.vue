@@ -3,7 +3,7 @@
     <div class="tool-type">
       <Head></Head>
       <el-menu
-        default-active="1"
+        :default-active="isGroup ? '2' : '1'"
         class="el-menu-vertical-demo"
         :collapse="true"
         background-color="#2e2e2e"
@@ -25,13 +25,13 @@
       </div>
       <div class="list">
         <user-list
-          v-show="isFriend"
+          v-show="!isGroup"
           :friendList="friendList"
           :userId="userId"
           @userClick="userClick"
         ></user-list>
         <group-list
-          v-show="!isFriend"
+          v-show="isGroup"
           :chatGroupList="chatGroupList"
           :groupId="groupId"
           @groupClick="groupClick"
@@ -40,15 +40,11 @@
     </div>
     <div class="chat-msg">
       <div class="title">
-        <p v-show="isFriend">{{ user.name }}</p>
-        <p v-show="!isFriend">{{ group.group_name }}</p>
+        <p v-show="!isGroup">{{ user.name }}</p>
+        <p v-show="isGroup">{{ group.group_name }}</p>
       </div>
       <div class="message">
-        <chat-message
-          :is-group="!isFriend"
-          :toId="isFriend ? toUserId : toGroupId"
-          :chatMsg="isFriend ? userChatMsg : groupChatMsg"
-        ></chat-message>
+        <chat-message :toId="!isGroup ? toUserId : toGroupId"></chat-message>
       </div>
       <div class="enter">
         <div class="enterType">
@@ -116,10 +112,11 @@ import GroupList from '@/components/GroupList.vue'
 import UserList from '@/components/UserList.vue'
 import Search from '@/components/Search.vue'
 import ChatMessage from '@/components/ChatMessage.vue'
-import { reactive, toRefs } from '@vue/reactivity'
+import { computed, reactive, toRefs } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
+import { useStore } from 'vuex'
 import { getUserList, getGroupList } from '@/api/list.js'
-import { getInformationHistory } from '@/api/message.js'
+import { getInformationHistory, getGroupMessageList } from '@/api/message.js'
 export default {
   name: 'Chat',
   components: {
@@ -130,11 +127,13 @@ export default {
     ChatMessage,
   },
   setup() {
+    // store
+    const store = useStore()
     let data = reactive({
       // 输入的信息
       enterMsg: '',
       // 是否选择好友列表 true: 好友  false: 群聊
-      isFriend: true,
+      // isUser: !store.state.isGroup,
       // 好友列表
       friendList: [],
       // 群聊列表
@@ -151,23 +150,23 @@ export default {
       toUserId: -1,
       // 发送群聊
       toGroupId: -1,
-      // 用户聊天信息
-      userChatMsg: [],
-      // 群聊信息
-      groupChatMsg: []
+      // webScoket 服务
+      session: null
     })
     // 列表点击事件
     function listSelect(id) {
       if (Number(id) === 1) {
-        data.isFriend = true
+        store.commit('getChatType', false)
         console.log('好友')
       } else {
         console.log('群聊')
-        data.isFriend = false
+        store.commit('getChatType', true)
       }
     }
     // 获取列表
     onMounted(() => {
+      // 建立scoket连接
+      scoketInit()
       // 获取好友列表
       getUserList().then((res) => {
         console.log(res)
@@ -175,12 +174,12 @@ export default {
         data.user = res.data.list[0]
         data.userId = data.user.id
         data.toUserId = data.userId
-        // 获取聊天信息
+        // 获取用户聊天信息
         getInformationHistory({
-          to_id: data.toUserId
-        }).then(res => {
-          console.log(res.data);
-          data.userChatMsg = res.data
+          to_id: data.toUserId,
+        }).then((res) => {
+          console.log(res.data)
+          store.commit('getUserChatMsg', res.data)
         })
       })
       // 获取群聊列表
@@ -190,32 +189,42 @@ export default {
         data.group = res.data[0]
         data.groupId = data.group.id
         data.toGroupId = data.group.id
-        // 获取聊天信息
-        getInformationHistory({
-          to_id: data.toGroupId
-        }).then(res => {
-          console.log(res.data);
-          data.groupChatMsg = res.data
+        // 获取群聊聊天信息
+        getGroupMessageList({
+          to_id: data.toGroupId,
+        }).then((res) => {
+          console.log(res)
+          store.commit('getGroupChatMsg', res.data)
         })
       })
     })
     // 用户点击事件
     function userClick(user) {
-      console.log(user)
       data.user = user
+      data.toUserId = user.id
     }
     // 群聊点击事件
     function groupClick(group) {
-      console.log(group)
+      console.log(group);
       data.group = group
+      data.toGroupId = group.id
     }
     console.log(data)
-
+    // webscoket  初始化连接
+    function scoketInit(){
+      if(typeof WebSocket === 'undefined'){
+        console.log('您的浏览器不支持socket');
+        return
+      } else {
+        data.session = new WebSocket("wss://im.pltrue.top/im/connect?token=" +  store.state.token)
+      }
+    }
     return {
       ...toRefs(data),
       listSelect,
       userClick,
       groupClick,
+      isGroup: computed(() => store.state.isGroup),
     }
   },
 }

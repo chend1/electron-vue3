@@ -7,10 +7,10 @@
         :class="{ own: userInfo ? item.user_id === userInfo.id : false }"
       >
         <div class="photo">
-          <img src="@/assets/image/photo.jpg" alt="" />
+          <img :src="item.users.avatar" alt="" />
         </div>
         <div class="user">
-          <div class="name" v-if="isGroup">{{ item.user_id }}</div>
+          <div class="name" v-if="isGroup">{{ item.users.name }}</div>
           <div class="msg">
             <p>{{ item.msg }}</p>
           </div>
@@ -44,7 +44,6 @@ export default {
 
     // 聊天类型
     const isGroup = computed(() => store.state.isGroup)
-    console.log(store.state.isGroup)
     // 聊天消息
     const userChatMsg = computed(() => store.state.userChatMsg)
     const groupChatMsg = computed(() => store.state.groupChatMsg)
@@ -83,6 +82,9 @@ export default {
         }
       }
     )
+    computed( () => {
+
+    })
     return {
       ...toRefs(data),
       userInfo: computed(() => store.state.userInfo),

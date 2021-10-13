@@ -40,8 +40,16 @@
     </div>
     <div class="chat-msg">
       <div class="title">
-        <p v-show="!isGroup">{{ user.name }}</p>
-        <p v-show="isGroup">{{ group.group_name }}</p>
+        <div class="name">
+          <p v-show="!isGroup">{{ user.name }}</p>
+          <p v-show="isGroup">{{ group.group_name }}</p>
+        </div>
+        <div class="desc" @click="showUserMsg">
+          <span>···</span>
+          <div class="userMsg" :class="{ active: isShow ? true : false}">
+            <user-msg :userMsg="isGroup ? group : user " :isGroup="isGroup"></user-msg>
+          </div>
+        </div>
       </div>
       <div class="message">
         <chat-message :toId="!isGroup ? toUserId : toGroupId"></chat-message>
@@ -97,7 +105,13 @@
             </li>
           </ul>
         </div>
-        <textarea name="" id="" class="textarea" v-model="enterMsg"></textarea>
+        <textarea
+          name=""
+          id=""
+          class="textarea"
+          v-model="enterMsg"
+          @keyup.enter="sendMsg"
+        ></textarea>
         <div class="send">
           <div class="btn">发送</div>
         </div>
@@ -112,11 +126,17 @@ import GroupList from '@/components/GroupList.vue'
 import UserList from '@/components/UserList.vue'
 import Search from '@/components/Search.vue'
 import ChatMessage from '@/components/ChatMessage.vue'
+import UserMsg from '@/components/UserMsg.vue'
 import { computed, reactive, toRefs } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { useStore } from 'vuex'
 import { getUserList, getGroupList } from '@/api/list.js'
 import { getInformationHistory, getGroupMessageList } from '@/api/message.js'
+// import {
+//   scoketOnMsg,
+//   scoketStart,
+//   scoketOnError,
+// } from '@/assets/js/webScoket.js'
 export default {
   name: 'Chat',
   components: {
@@ -125,6 +145,7 @@ export default {
     UserList,
     Search,
     ChatMessage,
+    UserMsg,
   },
   setup() {
     // store
@@ -150,8 +171,9 @@ export default {
       toUserId: -1,
       // 发送群聊
       toGroupId: -1,
-      // webScoket 服务
-      session: null
+      Scoket: null,
+      // 是否展示用户信息
+      isShow: false
     })
     // 列表点击事件
     function listSelect(id) {
@@ -163,40 +185,72 @@ export default {
         store.commit('getChatType', true)
       }
     }
-    // 获取列表
-    onMounted(() => {
-      // 建立scoket连接
-      scoketInit()
-      // 获取好友列表
+    // 获取用户聊天信息
+    function getUserChatMsg() {
+      getInformationHistory({
+        to_id: data.toUserId,
+      }).then((res) => {
+        console.log(res.data)
+        store.commit('getUserChatMsg', res.data)
+      })
+    }
+    // 获取群聊聊天信息
+    function getGroupChatMsg() {
+      console.log(data.toGroupId);
+      getGroupMessageList({
+        to_id: data.toGroupId,
+        channel_type: 2
+      }).then((res) => {
+        console.log(res)
+        store.commit('getGroupChatMsg', res.data)
+      })
+    }
+    // 获取好友列表
+    function getUserNewList() {
       getUserList().then((res) => {
         console.log(res)
         data.friendList = res.data.list
         data.user = res.data.list[0]
         data.userId = data.user.id
         data.toUserId = data.userId
-        // 获取用户聊天信息
-        getInformationHistory({
-          to_id: data.toUserId,
-        }).then((res) => {
-          console.log(res.data)
-          store.commit('getUserChatMsg', res.data)
-        })
+        getUserChatMsg()
       })
-      // 获取群聊列表
+    }
+    // 获取群聊列表
+    function getGroupNewList() {
       getGroupList().then((res) => {
         console.log(222, res.data)
         data.chatGroupList = res.data
         data.group = res.data[0]
         data.groupId = data.group.id
         data.toGroupId = data.group.id
-        // 获取群聊聊天信息
-        getGroupMessageList({
-          to_id: data.toGroupId,
-        }).then((res) => {
-          console.log(res)
-          store.commit('getGroupChatMsg', res.data)
-        })
+        getGroupChatMsg()
       })
+    }
+    // 监听信息
+    function scoketOnMsg(e) {
+      let userInfo = JSON.parse(e.data)
+      if (userInfo.channel_type === 1) {
+        // 更新聊天信息
+        getUserChatMsg()
+      } else {
+        // 更新群聊信息
+        console.log('更新群聊消息');
+        getGroupChatMsg()
+      }
+    }
+    // scoket 连接错误
+    function scoketOnError(){
+      console.log('error');
+    }
+    //当WebSocket创建成功时，触发onopen事件
+    function scoketStart() {
+      console.log('onopen事件触发')
+    }
+    onMounted(() => {
+      scoketInit()
+      getUserNewList()
+      getGroupNewList()
     })
     // 用户点击事件
     function userClick(user) {
@@ -205,19 +259,49 @@ export default {
     }
     // 群聊点击事件
     function groupClick(group) {
-      console.log(group);
+      console.log(group)
       data.group = group
       data.toGroupId = group.id
     }
-    console.log(data)
     // webscoket  初始化连接
-    function scoketInit(){
-      if(typeof WebSocket === 'undefined'){
-        console.log('您的浏览器不支持socket');
+    function scoketInit() {
+      if (typeof WebSocket === 'undefined') {
+        console.log('您的浏览器不支持socket')
         return
       } else {
-        data.session = new WebSocket("wss://im.pltrue.top/im/connect?token=" +  store.state.token)
+        data.Scoket = new WebSocket(
+          process.env.VUE_APP_BASE_URL.replace('https', 'wss') +
+            'im/connect?token=' +
+            store.state.token
+        )
+        // 监听socket连接
+        data.Scoket.onopen = scoketStart
+        // 监听socket错误信息
+        data.Scoket.onerror = scoketOnError
+        // 监听socket消息
+        data.Scoket.onmessage = scoketOnMsg
       }
+    }
+    // 发送信息
+    function sendMsg() {
+      console.log('次数11');
+      data.enterMsg = data.enterMsg.replace(/^\s*|\s*$/g, '')
+      let userInfo = {
+        from_id: store.state.userInfo.id,
+        msg: data.enterMsg,
+        to_id:  store.state.isGroup ? data.group.id : data.user.id,
+        msg_type: 1,
+        channel_type: store.state.isGroup ? 2 : 1,
+        status: 0,
+      }
+      console.log(userInfo);
+      data.Scoket.send(JSON.stringify(userInfo))
+      // 发送消息后清空
+      data.enterMsg = ''
+    }
+    // 用户信息点击事件
+    function showUserMsg(){
+      data.isShow = ! data.isShow
     }
     return {
       ...toRefs(data),
@@ -225,6 +309,8 @@ export default {
       userClick,
       groupClick,
       isGroup: computed(() => store.state.isGroup),
+      sendMsg,
+      showUserMsg
     }
   },
 }
@@ -274,9 +360,37 @@ export default {
       padding: 0 20px;
       white-space: nowrap;
       text-overflow: ellipsis;
-      overflow: hidden;
       text-align: left;
       border-bottom: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      .desc{
+        width: 30px;
+        height: 30px;  
+        text-align: center;
+        line-height: 30px;
+        cursor: pointer;
+        span{
+          line-height: 30px;
+        }
+        .userMsg{
+          position: absolute;
+          top: 0;
+          left: 100%;
+          background-color: #fff;
+          z-index: 999;
+          width: 0;
+          height: 800px;
+          border-left: 1px solid #ddd;
+          transition: all .5s;
+          overflow: hidden;
+          &.active{
+            width: 300px;
+          }
+        }
+      }
     }
     .message {
       position: absolute;

@@ -1,13 +1,13 @@
 <template>
   <div class="head" @click="headClick">
-    <img src="@/assets/image/photo.jpg" alt="" />
+    <img :src="userInfo.photo" alt="" />
     <div @click.stop class="dialog" v-show="isDialog">
       <div class="bg">
         <img src="@/assets/image/cool.jpg" alt="" />
       </div>
       <div class="message">
         <div class="photo">
-          <img src="@/assets/image/photo.jpg" alt="" />
+          <img :src="userInfo.photo" alt="" />
         </div>
         <div class="user">
           <div class="icon">
@@ -32,7 +32,7 @@
               />
             </svg>
           </div>
-          <div class="name">张三</div>
+          <div class="name">{{userInfo.name}}</div>
         </div>
       </div>
       <div class="label">
@@ -59,19 +59,24 @@
 </template>
 
 <script>
-import { reactive, toRefs } from '@vue/reactivity'
+import { computed, reactive, toRefs } from '@vue/reactivity'
+import { useStore } from 'vuex'
 export default {
   name: 'Head',
   setup() {
+    const store = new useStore()
+
     const data = reactive({
       isDialog: false,
     })
     function headClick() {
       data.isDialog = !data.isDialog
     }
+    
     return {
       ...toRefs(data),
       headClick,
+      userInfo: computed(() => store.state.userInfo),
     }
   },
 }

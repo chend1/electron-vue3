@@ -1,3 +1,4 @@
+
 import { createStore } from 'vuex'
 
 const store = createStore({
@@ -15,6 +16,10 @@ const store = createStore({
         : [],
       // 是否是群聊
       isGroup: JSON.parse(localStorage.getItem('isGroup')) || false,
+      // 好友列表
+      userList: JSON.parse(localStorage.getItem('userList')) || [],
+      // 群聊列表
+      groupList: JSON.parse(localStorage.getItem('groupList')) || [],
     }
   },
   mutations: {
@@ -29,11 +34,13 @@ const store = createStore({
     },
     // 获取当前用户聊天信息
     getUserChatMsg(state, userChatMsg) {
+      console.log('用户聊天信息');
       localStorage.setItem('userChatMsg', JSON.stringify(userChatMsg))
       state.userChatMsg = userChatMsg
     },
-    // 获取当前用户聊天信息
+    // 获取当前群聊信息
     getGroupChatMsg(state, groupChatMsg) {
+      console.log('用户群聊信息');
       localStorage.setItem('groupChatMsg', JSON.stringify(groupChatMsg))
       state.groupChatMsg = groupChatMsg
     },
@@ -43,6 +50,8 @@ const store = createStore({
       localStorage.setItem('isGroup', isGroup)
       state.isGroup = isGroup
     },
+    // 用户列表
+    // 群聊列表
   },
 })
 

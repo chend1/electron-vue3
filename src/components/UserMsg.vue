@@ -14,12 +14,12 @@
     </div>
     <div class="group" v-else>
       <ul>
-        <li>
+        <li v-for="item in userMsg.users" :key="item.id">
           <div class="photo">
-            <img :src="userMsg.avatar" alt="">
+            <img :src="item.avatar" alt="">
           </div>
           <div class="name">
-            {{userMsg.name}}
+            {{item.user_id}}
           </div>
         </li>
       </ul>
@@ -44,3 +44,7 @@ export default {
   },
 }
 </script>
+
+<style lang="less" scoped>
+
+</style>

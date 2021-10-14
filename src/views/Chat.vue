@@ -46,13 +46,20 @@
         </div>
         <div class="desc" @click="showUserMsg">
           <span>···</span>
-          <div class="userMsg" :class="{ active: isShow ? true : false}">
-            <user-msg :userMsg="isGroup ? group : user " :isGroup="isGroup"></user-msg>
+          <div class="userMsg" :class="{ active: isShow ? true : false }">
+            <user-msg
+              :userMsg="isGroup ? group : user"
+              :isGroup="isGroup"
+            ></user-msg>
           </div>
         </div>
       </div>
-      <div class="message">
-        <chat-message :toId="!isGroup ? toUserId : toGroupId"></chat-message>
+      <div class="message" ref="scrollMsg">
+        <chat-message
+          :toId="!isGroup ? toUserId : toGroupId"
+          @changeChatMsg="changeChatMsg"
+          ref="chatMessage"
+        ></chat-message>
       </div>
       <div class="enter">
         <div class="enterType">
@@ -89,7 +96,7 @@
                 />
               </svg>
             </li>
-            <li>
+            <li @click="smileClick">
               <svg
                 class="icon"
                 width="100%"
@@ -102,6 +109,7 @@
                   d="M511.997953 527.956414M511.997953 527.956414M512 958.708971c-246.320035 0-446.708971-200.38996-446.708971-446.708971S265.679965 65.290005 512 65.290005 958.708971 265.679965 958.708971 512 758.319012 958.708971 512 958.708971zM512 97.198739c-228.729401 0-414.801261 186.080046-414.801261 414.801261S283.269575 926.801261 512 926.801261s414.801261-186.080046 414.801261-414.801261S740.729401 97.198739 512 97.198739zM655.583163 384.371204A23.386 46.772 0 1 1 655.583163 385.394511ZM679.516248 448.184579c-23.105231 0-39.884382-26.836205-39.884382-63.815421s16.779152-63.815421 39.884382-63.815421c23.105231 0 39.884382 26.836205 39.884382 63.815421S702.620455 448.184579 679.516248 448.184579zM679.516248 353.395726c-3.100618 3.64604-7.976672 14.427594-7.976672 30.973432s4.877077 27.327392 7.976672 30.973432c3.100618-3.64604 7.976672-14.426571 7.976672-30.973432S682.615842 357.041766 679.516248 353.395726zM320.550667 384.371204A23.386 46.772 0 1 1 320.550667 385.394511ZM344.483752 448.184579c-23.105231 0-39.884382-26.836205-39.884382-63.815421s16.779152-63.815421 39.884382-63.815421 39.884382 26.836205 39.884382 63.815421S367.588983 448.184579 344.483752 448.184579zM344.483752 353.395726c-3.100618 3.64604-7.976672 14.427594-7.976672 30.973432s4.876054 27.327392 7.976672 30.973432c3.100618-3.64604 7.976672-14.426571 7.976672-30.973432S347.58437 357.041766 344.483752 353.395726zM783.214005 567.841819c0 127.760802-121.42756 231.331669-271.216052 231.331669S240.781902 695.602621 240.781902 567.841819M512 815.123762c-158.339238 0-287.170418-110.929462-287.170418-247.286036 0-8.810666 7.135514-15.954367 15.954367-15.954367s15.954367 7.143701 15.954367 15.954367c0 118.758778 114.51308 215.377302 255.262708 215.377302s255.262708-96.619548 255.262708-215.377302c0-8.810666 7.135514-15.954367 15.954367-15.954367s15.954367 7.143701 15.954367 15.954367C799.170418 704.1943 670.339238 815.123762 512 815.123762zM240.782925 551.884382l542.433126 0 0 31.907711-542.433126 0 0-31.907711Z"
                 />
               </svg>
+              <Look v-show="isLook" class="look" @getLook="getLook"></Look>
             </li>
           </ul>
         </div>
@@ -111,6 +119,7 @@
           class="textarea"
           v-model="enterMsg"
           @keyup.enter="sendMsg"
+          ref="sendMsgRef"
         ></textarea>
         <div class="send">
           <div class="btn">发送</div>
@@ -127,11 +136,13 @@ import UserList from '@/components/UserList.vue'
 import Search from '@/components/Search.vue'
 import ChatMessage from '@/components/ChatMessage.vue'
 import UserMsg from '@/components/UserMsg.vue'
-import { computed, reactive, toRefs } from '@vue/reactivity'
+import Look from '@/components/Look.vue'
+import { computed, reactive, ref, toRefs } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { useStore } from 'vuex'
 import { getUserList, getGroupList } from '@/api/list.js'
 import { getInformationHistory, getGroupMessageList } from '@/api/message.js'
+
 // import {
 //   scoketOnMsg,
 //   scoketStart,
@@ -146,6 +157,7 @@ export default {
     Search,
     ChatMessage,
     UserMsg,
+    Look,
   },
   setup() {
     // store
@@ -173,8 +185,19 @@ export default {
       toGroupId: -1,
       Scoket: null,
       // 是否展示用户信息
-      isShow: false
+      isShow: false,
+      // 是否展示表情
+      isLook: false
     })
+    // 修改滚动距离
+    let scrollMsg = ref(null)
+    let chatMessage = ref(null)
+    let sendMsgRef = ref(null)
+    function onScrollMsg() {
+      let height = chatMessage.value.$el.clientHeight
+      console.log('onScrollMsg', height)
+      scrollMsg.value.scrollTop = height
+    }
     // 列表点击事件
     function listSelect(id) {
       if (Number(id) === 1) {
@@ -187,6 +210,7 @@ export default {
     }
     // 获取用户聊天信息
     function getUserChatMsg() {
+      console.log('getUserChatMsg')
       getInformationHistory({
         to_id: data.toUserId,
       }).then((res) => {
@@ -196,10 +220,10 @@ export default {
     }
     // 获取群聊聊天信息
     function getGroupChatMsg() {
-      console.log(data.toGroupId);
+      console.log(data.toGroupId)
       getGroupMessageList({
         to_id: data.toGroupId,
-        channel_type: 2
+        channel_type: 2,
       }).then((res) => {
         console.log(res)
         store.commit('getGroupChatMsg', res.data)
@@ -208,11 +232,11 @@ export default {
     // 获取好友列表
     function getUserNewList() {
       getUserList().then((res) => {
-        console.log(res)
         data.friendList = res.data.list
         data.user = res.data.list[0]
         data.userId = data.user.id
         data.toUserId = data.userId
+        // 初始化聊天信息
         getUserChatMsg()
       })
     }
@@ -224,24 +248,61 @@ export default {
         data.group = res.data[0]
         data.groupId = data.group.id
         data.toGroupId = data.group.id
+        // 初始化聊天信息
         getGroupChatMsg()
       })
     }
+    // 更新聊天列表 type true 用户  false 群聊
+    // function changChatList(list,type){
+    //   if(type){
+    //     let list_user = data.friendList.map(item => {
+    //       console.log(item);
+    //       item.pointData = []
+    //       // 用户Id
+    //       if(item.id === list.id){
+    //         item.pointData.push(list.msg)
+    //       }
+    //       return item
+    //     })
+    //     data.friendList = list_user 
+    //   } else {
+    //     let list_group = data.friendList.map(item => {
+    //       console.log(item);
+    //       item.pointData = []
+    //       // 群聊id
+    //       if(item.id === list.id){
+    //         item.pointData.push(list.msg)
+    //       }
+    //       return item
+    //     })
+    //     data.friendList = list_group
+    //   }
+    // }
     // 监听信息
     function scoketOnMsg(e) {
       let userInfo = JSON.parse(e.data)
+      console.log(userInfo);
       if (userInfo.channel_type === 1) {
         // 更新聊天信息
         getUserChatMsg()
+        // changChatList(userInfo,true)
       } else {
         // 更新群聊信息
-        console.log('更新群聊消息');
+        console.log('更新群聊消息')
         getGroupChatMsg()
+        // changChatList(userInfo,false)
       }
+      // 发送消息后清空
+      data.enterMsg = ''
+    }
+    // 监听聊天信息是否改变
+    function changeChatMsg() {
+      // 更新滚动距离
+      onScrollMsg()
     }
     // scoket 连接错误
-    function scoketOnError(){
-      console.log('error');
+    function scoketOnError() {
+      console.log('error')
     }
     //当WebSocket创建成功时，触发onopen事件
     function scoketStart() {
@@ -251,17 +312,20 @@ export default {
       scoketInit()
       getUserNewList()
       getGroupNewList()
+      sendMsgRef.value.focus()
     })
     // 用户点击事件
     function userClick(user) {
       data.user = user
       data.toUserId = user.id
+      getUserChatMsg()
     }
     // 群聊点击事件
     function groupClick(group) {
       console.log(group)
       data.group = group
       data.toGroupId = group.id
+      getGroupChatMsg()
     }
     // webscoket  初始化连接
     function scoketInit() {
@@ -284,25 +348,36 @@ export default {
     }
     // 发送信息
     function sendMsg() {
-      console.log('次数11');
       data.enterMsg = data.enterMsg.replace(/^\s*|\s*$/g, '')
+      data.isLook = false
+      if (data.enterMsg === '') {
+        return
+      }
       let userInfo = {
         from_id: store.state.userInfo.id,
         msg: data.enterMsg,
-        to_id:  store.state.isGroup ? data.group.id : data.user.id,
+        to_id: store.state.isGroup ? data.group.id : data.user.id,
         msg_type: 1,
         channel_type: store.state.isGroup ? 2 : 1,
         status: 0,
       }
-      console.log(userInfo);
       data.Scoket.send(JSON.stringify(userInfo))
-      // 发送消息后清空
-      data.enterMsg = ''
     }
     // 用户信息点击事件
-    function showUserMsg(){
-      data.isShow = ! data.isShow
+    function showUserMsg() {
+      data.isShow = !data.isShow
     }
+    // 表情点击事件
+    function smileClick(){
+      data.isLook = !data.isLook
+    }
+    // 获取表情
+    function getLook(look){
+      sendMsgRef.value.focus()
+      console.log(look);
+      data.enterMsg += look
+    }
+
     return {
       ...toRefs(data),
       listSelect,
@@ -310,7 +385,13 @@ export default {
       groupClick,
       isGroup: computed(() => store.state.isGroup),
       sendMsg,
-      showUserMsg
+      showUserMsg,
+      scrollMsg,
+      chatMessage,
+      changeChatMsg,
+      getLook,
+      smileClick,
+      sendMsgRef
     }
   },
 }
@@ -366,16 +447,16 @@ export default {
       align-items: center;
       justify-content: space-between;
       position: relative;
-      .desc{
+      .desc {
         width: 30px;
-        height: 30px;  
+        height: 30px;
         text-align: center;
         line-height: 30px;
         cursor: pointer;
-        span{
+        span {
           line-height: 30px;
         }
-        .userMsg{
+        .userMsg {
           position: absolute;
           top: 0;
           left: 100%;
@@ -384,9 +465,9 @@ export default {
           width: 0;
           height: 800px;
           border-left: 1px solid #ddd;
-          transition: all .5s;
+          transition: all 0.5s;
           overflow: hidden;
-          &.active{
+          &.active {
             width: 300px;
           }
         }
@@ -418,6 +499,7 @@ export default {
             width: 20px;
             height: 20px;
             margin: 0 5px;
+            position: relative;
           }
         }
       }
@@ -467,6 +549,12 @@ export default {
 .el-icon-user,
 .el-icon-setting {
   color: #aaa;
+}
+.look{
+  position: absolute;
+  right: 0;
+  bottom: 30px;
+  z-index: 999;
 }
 ::-webkit-scrollbar {
   width: 6px; /*高宽分别对应横竖滚动条的尺寸*/

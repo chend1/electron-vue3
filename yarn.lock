@@ -4059,6 +4059,11 @@ elliptic@^6.5.3:
     minimalistic-assert "^1.0.1"
     minimalistic-crypto-utils "^1.0.1"
 
+emoji-picker-element@^1.6.5:
+  version "1.8.2"
+  resolved "https://registry.npmmirror.com/emoji-picker-element/download/emoji-picker-element-1.8.2.tgz#56ffa9d46be479c3ebdb38c0857dac343594d446"
+  integrity sha1-Vv+p1GvkecPr2zjAhX2sNDWU1EY=
+
 emoji-regex@^7.0.1:
   version "7.0.3"
   resolved "https://registry.npmmirror.com/emoji-regex/download/emoji-regex-7.0.3.tgz#933a04052860c85e83c122479c4748a8e4c72156"
@@ -9895,7 +9900,7 @@ vue-cookies@^1.7.4:
   resolved "https://registry.nlark.com/vue-cookies/download/vue-cookies-1.7.4.tgz#d241d0a0431da0795837651d10b4d73e7c8d3e8d"
   integrity sha1-0kHQoEMdoHlYN2UdELTXPnyNPo0=
 
-vue-demi@*:
+vue-demi@*, vue-demi@^0.11.2:
   version "0.11.4"
   resolved "https://registry.nlark.com/vue-demi/download/vue-demi-0.11.4.tgz#6101992fe4724cf5634018a16e953f3052e94e2a"
   integrity sha1-YQGZL+RyTPVjQBihbpU/MFLpTio=
@@ -9968,6 +9973,14 @@ vue@^3.2.20:
     "@vue/runtime-dom" "3.2.20"
     "@vue/server-renderer" "3.2.20"
     "@vue/shared" "3.2.20"
+
+vuemoji-picker@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.npmmirror.com/vuemoji-picker/download/vuemoji-picker-0.0.7.tgz#382d365e75644683dba0530945ed4495eaeb1708"
+  integrity sha1-OC02XnVkRoPboFMJRe1ElerrFwg=
+  dependencies:
+    emoji-picker-element "^1.6.5"
+    vue-demi "^0.11.2"
 
 vuex@^4.0.2:
   version "4.0.2"

@@ -22,15 +22,15 @@
 
 <script>
 import { computed, reactive, toRefs } from '@vue/reactivity'
-import { watch } from '@vue/runtime-core'
+import { onUpdated, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
-import { getInformationHistory, getGroupMessageList } from '@/api/message.js'
+// import { getInformationHistory, getGroupMessageList } from '@/api/message.js'
 export default {
-  emits: [],
+  emits: ["changeChatMsg"],
   props: {
     toId: Number,
   },
-  setup(props) {
+  setup(props,context) {
     // store
     // console.log(props);
     // const toId = toRef(props, 'toId')
@@ -57,34 +57,11 @@ export default {
         console.log(newVal, oldVal)
       }
     )
-    watch(
-      () => props.toId,
-      (newVal, oldVal) => {
-        console.log(123, newVal, oldVal)
-        // 获取聊天信息
-        if (data.chatType) {
-          // 用户信息
-          getInformationHistory({
-            to_id: newVal,
-          }).then((res) => {
-            console.log(res.data)
-            store.commit('getUserChatMsg', res.data)
-          })
-        } else {
-          // 群聊信息
-          getGroupMessageList({
-            to_id: newVal,
-            channel_type: 2
-          }).then((res) => {
-            console.log(res.data)
-            store.commit('getGroupChatMsg', res.data)
-          })
-        }
-      }
-    )
-    computed( () => {
-
+    onUpdated( () => {
+      context.emit('changeChatMsg')
     })
+
+    computed(() => {})
     return {
       ...toRefs(data),
       userInfo: computed(() => store.state.userInfo),

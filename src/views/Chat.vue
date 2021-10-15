@@ -121,7 +121,7 @@
           @keyup.enter="sendMsg"
           ref="sendMsgRef"
         ></textarea>
-        <div class="send"> 
+        <div class="send">
           <div class="btn">发送</div>
         </div>
       </div>
@@ -269,24 +269,36 @@ export default {
             store.state.userInfo.id === list.to_id &&
             item.id === list.from_id
           ) {
+            
+            if(item.pointData[0] instanceof Object){
+              item.pointData = []
+            }
             item.pointData.push(list.msg)
           }
           // 发送者
-          // if (
-          //   store.state.userInfo.id !== list.to_id &&
-          //   item.id === list.to_id
-          // ) {
-          //   // item.pointData = ''
-          //   item.pointData = list.msg
-          // }
+          if (
+            store.state.userInfo.id !== list.to_id &&
+            item.id === list.to_id
+          ) {
+            // item.pointData = ''
+            item.pointData = [{ type: true, msg: list.msg }]
+          }
           return item
         })
         data.friendList = list_user
         console.log(data.friendList)
       } else {
         let list_group = data.chatGroupList.map((item) => {
-          if (item.id === list.to_id) {
+          // 判断是不是接收者
+          if (item.id === list.to_id && store.state.userInfo.id !== list.from_id) {
+            if(item.pointData[0] instanceof Object){
+              item.pointData = []
+            }
             item.pointData.push(list.msg)
+          }
+          // 判断是不是发送者
+          if(item.id === list.to_id && store.state.userInfo.id === list.from_id){
+            item.pointData = [{ type: true, msg: list.msg }]
           }
           return item
         })
@@ -294,38 +306,39 @@ export default {
       }
     }
     // 取消聊天列表提示信息
-    function cancelPoint(id, type) {
-      console.log(type,id);
-      if (type) {
-        let userList = data.friendList.map((item) => {
-          // item.pointData = []
-          if (item.id === id) {
-            item.pointData = []
-          }
-          return item
-        })
-        data.friendList = userList
-      } else {
-        let groupList = data.chatGroupList.map((item) => {
-          if (item.id === id) {
-            item.pointData = []
-          }
-          return item
-        })
-        data.groupList = groupList
-      }
-    }
+    // function cancelPoint(id, type) {
+    //   console.log(type,id);
+    //   if (type) {
+    //     let userList = data.friendList.map((item) => {
+    //       // item.pointData = []
+    //       if (item.id === id) {
+    //         item.pointData = []
+    //       }
+    //       return item
+    //     })
+    //     data.friendList = userList
+    //   } else {
+    //     let groupList = data.chatGroupList.map((item) => {
+    //       if (item.id === id) {
+    //         item.pointData = []
+    //       }
+    //       return item
+    //     })
+    //     data.groupList = groupList
+    //   }
+    // }
     // 聊天框点击事件
     function cancelPointClick() {
-      console.log(111);
+      console.log(111)
       if (data.isGroup) {
-        cancelPoint(data.group.id, false)
+        // cancelPoint(data.group.id, false)
       } else {
-        cancelPoint(data.user.id, true)
+        // cancelPoint(data.user.id, true)
       }
     }
     // 监听信息
     function scoketOnMsg(e) {
+      console.log('11111111111111111',e.data);
       let userInfo = JSON.parse(e.data)
       console.log(userInfo)
       if (userInfo.channel_type === 1) {

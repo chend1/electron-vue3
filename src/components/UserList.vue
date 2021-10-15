@@ -10,7 +10,7 @@
         <div class="photo">
           <div class="img">
             <img :src="item.avatar" alt="" />
-            <div class="point" v-if="item.pointData.length > 0">
+            <div class="point" v-if="item.pointData.length > 0 && !(item.pointData[0] instanceof Object)">
               {{ item.pointData.length }}
             </div>
           </div>
@@ -20,7 +20,7 @@
             <div class="name">{{ item.name }}</div>
             <div class="time">{{ item.send_time }}</div>
           </div>
-          <div class="msg">{{ item.pointData[item.pointData.length-1] }}</div>
+          <div class="msg">{{ (item.pointData[0] instanceof Object) ? item.pointData[0].msg : item.pointData[item.pointData.length-1] }}</div>
         </div>
       </li>
     </ul>

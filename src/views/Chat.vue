@@ -61,7 +61,7 @@
           ref="chatMessage"
         ></chat-message>
       </div>
-      <div class="enter">
+      <div class="enter" @click="cancelPointClick">
         <div class="enterType">
           <ul>
             <li>
@@ -121,7 +121,7 @@
           @keyup.enter="sendMsg"
           ref="sendMsgRef"
         ></textarea>
-        <div class="send">
+        <div class="send"> 
           <div class="btn">发送</div>
         </div>
       </div>
@@ -187,7 +187,7 @@ export default {
       // 是否展示用户信息
       isShow: false,
       // 是否展示表情
-      isLook: false
+      isLook: false,
     })
     // 修改滚动距离
     let scrollMsg = ref(null)
@@ -232,7 +232,11 @@ export default {
     // 获取好友列表
     function getUserNewList() {
       getUserList().then((res) => {
-        data.friendList = res.data.list
+        let userList = res.data.list.map((item) => {
+          item.pointData = []
+          return item
+        })
+        data.friendList = userList
         data.user = res.data.list[0]
         data.userId = data.user.id
         data.toUserId = data.userId
@@ -244,7 +248,11 @@ export default {
     function getGroupNewList() {
       getGroupList().then((res) => {
         console.log(222, res.data)
-        data.chatGroupList = res.data
+        let groupList = res.data.map((item) => {
+          item.pointData = []
+          return item
+        })
+        data.chatGroupList = groupList
         data.group = res.data[0]
         data.groupId = data.group.id
         data.toGroupId = data.group.id
@@ -253,44 +261,82 @@ export default {
       })
     }
     // 更新聊天列表 type true 用户  false 群聊
-    // function changChatList(list,type){
-    //   if(type){
-    //     let list_user = data.friendList.map(item => {
-    //       console.log(item);
-    //       item.pointData = []
-    //       // 用户Id
-    //       if(item.id === list.id){
-    //         item.pointData.push(list.msg)
-    //       }
-    //       return item
-    //     })
-    //     data.friendList = list_user 
-    //   } else {
-    //     let list_group = data.friendList.map(item => {
-    //       console.log(item);
-    //       item.pointData = []
-    //       // 群聊id
-    //       if(item.id === list.id){
-    //         item.pointData.push(list.msg)
-    //       }
-    //       return item
-    //     })
-    //     data.friendList = list_group
-    //   }
-    // }
+    function changChatList(list, type) {
+      if (type) {
+        let list_user = data.friendList.map((item) => {
+          // 判断是不是接收者
+          if (
+            store.state.userInfo.id === list.to_id &&
+            item.id === list.from_id
+          ) {
+            item.pointData.push(list.msg)
+          }
+          // 发送者
+          // if (
+          //   store.state.userInfo.id !== list.to_id &&
+          //   item.id === list.to_id
+          // ) {
+          //   // item.pointData = ''
+          //   item.pointData = list.msg
+          // }
+          return item
+        })
+        data.friendList = list_user
+        console.log(data.friendList)
+      } else {
+        let list_group = data.chatGroupList.map((item) => {
+          if (item.id === list.to_id) {
+            item.pointData.push(list.msg)
+          }
+          return item
+        })
+        data.chatGroupList = list_group
+      }
+    }
+    // 取消聊天列表提示信息
+    function cancelPoint(id, type) {
+      console.log(type,id);
+      if (type) {
+        let userList = data.friendList.map((item) => {
+          // item.pointData = []
+          if (item.id === id) {
+            item.pointData = []
+          }
+          return item
+        })
+        data.friendList = userList
+      } else {
+        let groupList = data.chatGroupList.map((item) => {
+          if (item.id === id) {
+            item.pointData = []
+          }
+          return item
+        })
+        data.groupList = groupList
+      }
+    }
+    // 聊天框点击事件
+    function cancelPointClick() {
+      console.log(111);
+      if (data.isGroup) {
+        cancelPoint(data.group.id, false)
+      } else {
+        cancelPoint(data.user.id, true)
+      }
+    }
     // 监听信息
     function scoketOnMsg(e) {
       let userInfo = JSON.parse(e.data)
-      console.log(userInfo);
+      console.log(userInfo)
       if (userInfo.channel_type === 1) {
         // 更新聊天信息
         getUserChatMsg()
-        // changChatList(userInfo,true)
+        changChatList(userInfo, true)
       } else {
         // 更新群聊信息
         console.log('更新群聊消息')
         getGroupChatMsg()
-        // changChatList(userInfo,false)
+        changChatList(userInfo, false)
       }
       // 发送消息后清空
       data.enterMsg = ''
@@ -368,13 +414,13 @@ export default {
       data.isShow = !data.isShow
     }
     // 表情点击事件
-    function smileClick(){
+    function smileClick() {
       data.isLook = !data.isLook
     }
     // 获取表情
-    function getLook(look){
+    function getLook(look) {
       sendMsgRef.value.focus()
-      console.log(look);
+      console.log(look)
       data.enterMsg += look
     }
 
@@ -391,7 +437,8 @@ export default {
       changeChatMsg,
       getLook,
       smileClick,
-      sendMsgRef
+      sendMsgRef,
+      cancelPointClick,
     }
   },
 }
@@ -550,7 +597,7 @@ export default {
 .el-icon-setting {
   color: #aaa;
 }
-.look{
+.look {
   position: absolute;
   right: 0;
   bottom: 30px;

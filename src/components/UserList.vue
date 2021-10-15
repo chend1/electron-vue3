@@ -10,8 +10,8 @@
         <div class="photo">
           <div class="img">
             <img :src="item.avatar" alt="" />
-            <div class="point" v-if="pointData.length > 0">
-              {{ pointData.length }}
+            <div class="point" v-if="item.pointData.length > 0">
+              {{ item.pointData.length }}
             </div>
           </div>
         </div>
@@ -20,7 +20,7 @@
             <div class="name">{{ item.name }}</div>
             <div class="time">{{ item.send_time }}</div>
           </div>
-          <div class="msg">{{ item.send_msg }}</div>
+          <div class="msg">{{ item.pointData[item.pointData.length-1] }}</div>
         </div>
       </li>
     </ul>

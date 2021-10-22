@@ -16,6 +16,7 @@
     "axios": "^0.22.0",
     "core-js": "^3.6.5",
     "element-plus": "^1.1.0-beta.12",
+    "js-audio-recorder": "^1.0.7",
     "less": "^4.1.1",
     "less-loader": "7",
     "sass-resources-loader": "^2.2.4",

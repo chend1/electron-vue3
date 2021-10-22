@@ -14,23 +14,107 @@
         />
       </svg>
     </div>
+    <div class="audio-box" v-show="isAudio">
+      <div class="close"></div>
+      <p>{{audioPoint}}</p>
+      <div class="tool">
+        <el-button type="primary" size="mini">开始录音</el-button>
+        <el-button type="info" size="mini">暂停录音</el-button>
+        <el-button type="warning" size="mini">继续录音</el-button>
+        <el-button type="success" size="mini">结束录音</el-button>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
+import Recorder from 'js-audio-recorder'
+import { reactive, toRefs } from 'vue-demi'
 export default {
   emits: ['getFileNmae'],
   setup() {
-
+    const data = reactive({
+      recorder: new Recorder(),
+      isAudio: false,
+      audioPoint: '点击下方按钮开始录音'
+    })
     function audioClick() {
-      console.log('audio');
+      data.isAudio = !data.isAudio
+    }
+    // 录音事件
+    function startAudio(){
+      data.recorder.start().then(
+        () => {
+          // 开始录音
+        },
+        (error) => {
+          // 出错了
+          console.log(`${error.name} : ${error.message}`)
+        }
+      )
     }
 
     return {
       audioClick,
+      startAudio,
+      ...toRefs(data)
     }
   },
 }
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.audio-box{
+  width: 500px;
+  height: 300px;
+  margin-left: 160px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 9999;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  background-color: #fff;
+  P{
+    width: 100%;
+    line-height: 40px;
+    font-size: 22px;
+    text-align: center;
+    margin: 20px 0;
+    color: cornflowerblue;
+  }
+}
+.close{
+  width : 30px;
+  height: 30px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 9999;
+  &::before{
+    content: '';
+    width: 2px;
+    height: 25px;
+    transform: rotate(-45deg);
+    background-color: #000;
+  }
+  &::after{
+    content: '';
+    width: 2px;
+    height: 25px;
+    transform: rotate(-45deg);
+    background-color: #000;
+  }
+}
+.tool{
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 30px;
+  display: flex;
+  justify-content: space-around;
+  position: absolute;
+  left: 0;
+  bottom: 15px;
+}
+</style>

@@ -6074,6 +6074,11 @@ jest-worker@^26.2.1:
     merge-stream "^2.0.0"
     supports-color "^7.0.0"
 
+js-audio-recorder@^1.0.7:
+  version "1.0.7"
+  resolved "https://registry.npm.taobao.org/js-audio-recorder/download/js-audio-recorder-1.0.7.tgz#01501cb9eb143d57994b42bd5ae97974fda18908"
+  integrity sha1-AVAcuesUPVeZS0K9Wul5dP2hiQg=
+
 js-message@1.0.7:
   version "1.0.7"
   resolved "https://registry.nlark.com/js-message/download/js-message-1.0.7.tgz#fbddd053c7a47021871bb8b2c95397cc17c20e47"

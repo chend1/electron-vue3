@@ -397,14 +397,14 @@ export default {
       }
     }
     // 发送信息
-    function sendMsg(type) {
+    function sendMsg(e,type) {
       data.enterMsg = data.enterMsg.replace(/^\s*|\s*$/g, '')
       data.isLook = false
       let msg = ''
       if (data.enterMsg === '' && data.imgUrl === '') {
         return
       }
-      console.log(type);
+      console.log(22222222,type);
       if(type === 'img'){
         console.log('data.imgUrl',data.imgUrl);
         msg = data.imgUrl

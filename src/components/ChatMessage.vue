@@ -1,13 +1,25 @@
 <template>
-  <div class="msg-list" v-if="toId !== -1">
+  <div class="msg-list" v-if="chatMsg.list.length > 0">
     <ul :class="isGroup ? 'group' : ''">
       <li
-        v-for="item in chatMsg"
+        v-for="item in chatMsg.list"
         :key="item.id"
         :class="{ own: userInfo ? item.user_id === userInfo.id : false }"
       >
         <div class="photo">
-          <img :src="item.users.avatar" alt="" />
+          <div v-if="!isGroup">
+            <img
+              :src="userInfo.photo"
+              alt=""
+              v-if="item.user_id === userInfo.id"
+            />
+            <img :src="chatMsg.user.avatar" alt="" v-else />
+          </div>
+          <div v-else>
+            <img :src="item.users.avatar" alt=""  >
+          </div>
+          <!-- <img :src="userInfo.photo" alt="" v-if="item.user_id === userInfo.id" />
+          <img :src="isGroup ? item.users.avatar : selectUser.avatar" alt="" v-else /> -->
         </div>
         <div class="user">
           <div class="name" v-if="isGroup">{{ item.users.name }}</div>
@@ -26,11 +38,17 @@ import { onUpdated, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
 // import { getInformationHistory, getGroupMessageList } from '@/api/message.js'
 export default {
-  emits: ["changeChatMsg"],
+  emits: ['changeChatMsg'],
   props: {
     toId: Number,
+    // selectUser: {
+    //   type: Object,
+    //   default(){
+    //     return {}
+    //   }
+    // }
   },
-  setup(props,context) {
+  setup(props, context) {
     // store
     // console.log(props);
     // const toId = toRef(props, 'toId')
@@ -38,7 +56,7 @@ export default {
     const store = useStore()
 
     let data = reactive({
-      chatMsg: [],
+      chatMsg: {},
       chatType: !store.state.isGroup,
     })
 
@@ -48,7 +66,7 @@ export default {
     const userChatMsg = computed(() => store.state.userChatMsg)
     const groupChatMsg = computed(() => store.state.groupChatMsg)
     data.chatMsg = data.chatType ? userChatMsg : groupChatMsg
-    console.log(data.chatMsg)
+    console.log(data.chatMsg.list)
     watch(
       () => store.state.isGroup,
       (newVal, oldVal) => {
@@ -57,7 +75,7 @@ export default {
         console.log(newVal, oldVal)
       }
     )
-    onUpdated( () => {
+    onUpdated(() => {
       context.emit('changeChatMsg')
     })
 

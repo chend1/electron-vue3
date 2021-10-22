@@ -65,51 +65,13 @@
         <div class="enterType">
           <ul>
             <li>
-              <svg
-                class="icon"
-                width="100%"
-                height="100%"
-                viewBox="0 0 1024 1024"
-                version="1.1"
-              >
-                <path
-                  fill="#666666"
-                  d="M128 853.333333h768.064L896 170.666667H127.936L128 853.333333zM127.936 128h768.128C919.594667 128 938.666667 146.986667 938.666667 170.666667v682.666666c0 23.573333-19.029333 42.666667-42.602667 42.666667H127.936A42.56 42.56 0 0 1 85.333333 853.333333V170.666667c0-23.573333 19.029333-42.666667 42.602667-42.666667z m200.128 527.082667c22.890667-19.626667 68.48-36.416 98.794667-36.416h20.949333c40.533333 0 95.914667-20.437333 126.549333-46.698667l52.373334-44.885333c22.890667-19.626667 68.48-36.416 98.794666-36.416H810.666667a21.333333 21.333333 0 0 0 0-42.666667h-85.12c-40.533333 0-95.936 20.437333-126.570667 46.698667l-52.373333 44.885333C523.690667 559.210667 478.165333 576 447.786667 576h-20.949334c-40.490667 0-95.914667 20.437333-126.549333 46.698667L199.445333 709.12a21.333333 21.333333 0 1 0 27.776 32.384l100.842667-86.442667z"
-                />
-                <path
-                  fill="#666666"
-                  d="M352 373.333333m-53.333333 0a53.333333 53.333333 0 1 0 106.666666 0 53.333333 53.333333 0 1 0-106.666666 0Z"
-                />
-              </svg>
+              <UploadImg @getFileNmae="getFileNmae"></UploadImg>
             </li>
             <li>
-              <svg
-                class="icon"
-                width="100%"
-                height="100%"
-                viewBox="0 0 1024 1024"
-                version="1.1"
-              >
-                <path
-                  fill="#666666"
-                  d="M512 685.226667c172.373333-1.877333 173.738667-173.056 173.909333-173.226667L685.909333 216.576C685.738667 216.405333 684.373333 45.226667 512 43.349333c-172.373333 1.877333-173.738667 173.056-173.909333 173.226667L338.090667 512C338.261333 512.170667 339.626667 683.52 512 685.226667zM389.290667 216.576c1.536-0.170667-1.536-122.026667 122.709333-122.026667 65.536 0 95.573333 33.962667 109.568 66.048l-112.469333 0c-14.165333 0-25.6 11.434667-25.6 25.6 0 14.165333 11.434667 25.6 25.6 25.6L634.88 211.797333l0 51.2L389.290667 262.997333 389.290667 216.576zM389.290667 314.197333 634.88 314.197333 634.88 512c-1.536 0.170667 1.536 122.026667-122.88 122.026667-124.416-0.170667-121.173333-122.026667-122.709333-122.026667L389.290667 314.197333zM834.389333 512c0-14.165333-11.434667-25.6-25.6-25.6-14.165333 0-25.6 11.434667-25.6 25.6-1.536 0.170667 1.536 269.482667-271.189333 269.824C239.274667 781.482667 242.346667 512.170667 240.810667 512l0-0.170667c0-14.165333-11.434667-25.6-25.6-25.6-14.165333 0-25.6 11.434667-25.6 25.6l0 0.170667c0.341333 0.170667 1.706667 301.738667 296.789333 320l0 97.450667-122.709333 0c-14.165333 0-25.6 11.434667-25.6 25.6 0 14.165333 11.434667 25.6 25.6 25.6l296.789333 0c14.165333 0 25.6-11.434667 25.6-25.6 0-14.165333-11.434667-25.6-25.6-25.6L537.6 929.450667l0-97.450667C832.682667 813.738667 834.048 512.170667 834.389333 512z"
-                />
-              </svg>
+              <LoadAudio></LoadAudio>
             </li>
-            <li @click="smileClick">
-              <svg
-                class="icon"
-                width="100%"
-                height="100%"
-                viewBox="0 0 1024 1024"
-                version="1.1"
-              >
-                <path
-                  fill="#666666"
-                  d="M511.997953 527.956414M511.997953 527.956414M512 958.708971c-246.320035 0-446.708971-200.38996-446.708971-446.708971S265.679965 65.290005 512 65.290005 958.708971 265.679965 958.708971 512 758.319012 958.708971 512 958.708971zM512 97.198739c-228.729401 0-414.801261 186.080046-414.801261 414.801261S283.269575 926.801261 512 926.801261s414.801261-186.080046 414.801261-414.801261S740.729401 97.198739 512 97.198739zM655.583163 384.371204A23.386 46.772 0 1 1 655.583163 385.394511ZM679.516248 448.184579c-23.105231 0-39.884382-26.836205-39.884382-63.815421s16.779152-63.815421 39.884382-63.815421c23.105231 0 39.884382 26.836205 39.884382 63.815421S702.620455 448.184579 679.516248 448.184579zM679.516248 353.395726c-3.100618 3.64604-7.976672 14.427594-7.976672 30.973432s4.877077 27.327392 7.976672 30.973432c3.100618-3.64604 7.976672-14.426571 7.976672-30.973432S682.615842 357.041766 679.516248 353.395726zM320.550667 384.371204A23.386 46.772 0 1 1 320.550667 385.394511ZM344.483752 448.184579c-23.105231 0-39.884382-26.836205-39.884382-63.815421s16.779152-63.815421 39.884382-63.815421 39.884382 26.836205 39.884382 63.815421S367.588983 448.184579 344.483752 448.184579zM344.483752 353.395726c-3.100618 3.64604-7.976672 14.427594-7.976672 30.973432s4.876054 27.327392 7.976672 30.973432c3.100618-3.64604 7.976672-14.426571 7.976672-30.973432S347.58437 357.041766 344.483752 353.395726zM783.214005 567.841819c0 127.760802-121.42756 231.331669-271.216052 231.331669S240.781902 695.602621 240.781902 567.841819M512 815.123762c-158.339238 0-287.170418-110.929462-287.170418-247.286036 0-8.810666 7.135514-15.954367 15.954367-15.954367s15.954367 7.143701 15.954367 15.954367c0 118.758778 114.51308 215.377302 255.262708 215.377302s255.262708-96.619548 255.262708-215.377302c0-8.810666 7.135514-15.954367 15.954367-15.954367s15.954367 7.143701 15.954367 15.954367C799.170418 704.1943 670.339238 815.123762 512 815.123762zM240.782925 551.884382l542.433126 0 0 31.907711-542.433126 0 0-31.907711Z"
-                />
-              </svg>
-              <Look v-show="isLook" class="look" @getLook="getLook"></Look>
+            <li>
+              <Look @getLook="getLook"></Look>
             </li>
           </ul>
         </div>
@@ -121,8 +83,17 @@
           @keyup.enter="sendMsg"
           ref="sendMsgRef"
         ></textarea>
+        <!-- <div
+          contenteditable="true"
+          class="textarea"
+          v-html="enterMsg"
+          @keyup.enter="sendMsg"
+          @input="handleInput"
+          ref="sendMsgRef"
+        > 
+        </div>-->
         <div class="send">
-          <div class="btn">发送</div>
+          <div class="btn" @click="sendMsg">发送</div>
         </div>
       </div>
     </div>
@@ -136,6 +107,8 @@ import UserList from '@/components/UserList.vue'
 import Search from '@/components/Search.vue'
 import ChatMessage from '@/components/ChatMessage.vue'
 import UserMsg from '@/components/UserMsg.vue'
+import UploadImg from '@/components/UploadImg.vue'
+import LoadAudio from '@/components/LoadAudio.vue'
 import Look from '@/components/Look.vue'
 import { computed, reactive, ref, toRefs } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
@@ -158,6 +131,8 @@ export default {
     ChatMessage,
     UserMsg,
     Look,
+    UploadImg,
+    LoadAudio
   },
   setup() {
     // store
@@ -186,8 +161,8 @@ export default {
       Scoket: null,
       // 是否展示用户信息
       isShow: false,
-      // 是否展示表情
-      isLook: false,
+      // 图片
+      imgUrl: '',
     })
     // 修改滚动距离
     let scrollMsg = ref(null)
@@ -226,7 +201,11 @@ export default {
         channel_type: 2,
       }).then((res) => {
         console.log(res)
-        store.commit('getGroupChatMsg', res.data)
+        let mesList = {
+          users: false,
+          list: res.data,
+        }
+        store.commit('getGroupChatMsg', mesList)
       })
     }
     // 获取好友列表
@@ -269,8 +248,7 @@ export default {
             store.state.userInfo.id === list.to_id &&
             item.id === list.from_id
           ) {
-            
-            if(item.pointData[0] instanceof Object){
+            if (item.pointData[0] instanceof Object) {
               item.pointData = []
             }
             item.pointData.push(list.msg)
@@ -290,14 +268,20 @@ export default {
       } else {
         let list_group = data.chatGroupList.map((item) => {
           // 判断是不是接收者
-          if (item.id === list.to_id && store.state.userInfo.id !== list.from_id) {
-            if(item.pointData[0] instanceof Object){
+          if (
+            item.id === list.to_id &&
+            store.state.userInfo.id !== list.from_id
+          ) {
+            if (item.pointData[0] instanceof Object) {
               item.pointData = []
             }
             item.pointData.push(list.msg)
           }
           // 判断是不是发送者
-          if(item.id === list.to_id && store.state.userInfo.id === list.from_id){
+          if (
+            item.id === list.to_id &&
+            store.state.userInfo.id === list.from_id
+          ) {
             item.pointData = [{ type: true, msg: list.msg }]
           }
           return item
@@ -306,41 +290,40 @@ export default {
       }
     }
     // 取消聊天列表提示信息
-    // function cancelPoint(id, type) {
-    //   console.log(type,id);
-    //   if (type) {
-    //     let userList = data.friendList.map((item) => {
-    //       // item.pointData = []
-    //       if (item.id === id) {
-    //         item.pointData = []
-    //       }
-    //       return item
-    //     })
-    //     data.friendList = userList
-    //   } else {
-    //     let groupList = data.chatGroupList.map((item) => {
-    //       if (item.id === id) {
-    //         item.pointData = []
-    //       }
-    //       return item
-    //     })
-    //     data.groupList = groupList
-    //   }
-    // }
-    // 聊天框点击事件
-    function cancelPointClick() {
-      console.log(111)
-      if (data.isGroup) {
-        // cancelPoint(data.group.id, false)
+    function cancelPoint(id, type) {
+      console.log(type, id)
+      if (type) {
+        let userList = data.friendList.map((item) => {
+          // item.pointData = []
+          if (item.id === id && !(item.pointData[0] instanceof Object)) {
+            item.pointData[0] = {
+              msg: item.pointData[item.pointData.length - 1],
+            }
+          }
+          return item
+        })
+        data.friendList = userList
       } else {
-        // cancelPoint(data.user.id, true)
+        let groupList = data.chatGroupList.map((item) => {
+          if (item.id === id && !(item.pointData[0] instanceof Object)) {
+            item.pointData[0] = {
+              msg: item.pointData[item.pointData.length - 1],
+            }
+          }
+          return item
+        })
+        data.groupList = groupList
       }
     }
+
+    // 聊天框点击事件
+    function cancelPointClick() {}
     // 监听信息
     function scoketOnMsg(e) {
-      console.log('11111111111111111',e.data);
       let userInfo = JSON.parse(e.data)
-      console.log(userInfo)
+      console.log('2222', userInfo)
+      userInfo.msg = decodeURIComponent(userInfo.msg)
+      console.log('2222', userInfo)
       if (userInfo.channel_type === 1) {
         // 更新聊天信息
         getUserChatMsg()
@@ -365,6 +348,7 @@ export default {
     }
     //当WebSocket创建成功时，触发onopen事件
     function scoketStart() {
+      data.Scoket.send('HeartBeat')
       console.log('onopen事件触发')
     }
     onMounted(() => {
@@ -378,13 +362,20 @@ export default {
       data.user = user
       data.toUserId = user.id
       getUserChatMsg()
+      cancelPoint(user.id, true)
+      // 文本输入获取焦点
+      sendMsgRef.value.focus()
+      data.enterMsg = ''
     }
     // 群聊点击事件
     function groupClick(group) {
-      console.log(group)
       data.group = group
       data.toGroupId = group.id
       getGroupChatMsg()
+      cancelPoint(group.id, false)
+      // 文本输入获取焦点
+      sendMsgRef.value.focus()
+      data.enterMsg = ''
     }
     // webscoket  初始化连接
     function scoketInit() {
@@ -406,15 +397,25 @@ export default {
       }
     }
     // 发送信息
-    function sendMsg() {
+    function sendMsg(type) {
       data.enterMsg = data.enterMsg.replace(/^\s*|\s*$/g, '')
       data.isLook = false
-      if (data.enterMsg === '') {
+      let msg = ''
+      if (data.enterMsg === '' && data.imgUrl === '') {
         return
       }
+      console.log(type);
+      if(type === 'img'){
+        console.log('data.imgUrl',data.imgUrl);
+        msg = data.imgUrl
+      }
+      if(type === undefined){
+        msg = data.enterMsg
+      }
+
       let userInfo = {
         from_id: store.state.userInfo.id,
-        msg: data.enterMsg,
+        msg: encodeURIComponent(msg),
         to_id: store.state.isGroup ? data.group.id : data.user.id,
         msg_type: 1,
         channel_type: store.state.isGroup ? 2 : 1,
@@ -426,17 +427,21 @@ export default {
     function showUserMsg() {
       data.isShow = !data.isShow
     }
-    // 表情点击事件
-    function smileClick() {
-      data.isLook = !data.isLook
-    }
     // 获取表情
     function getLook(look) {
       sendMsgRef.value.focus()
-      console.log(look)
+      data.isLook = false
       data.enterMsg += look
     }
-
+    // 获取图片地址
+    function getFileNmae(file_url) {
+      data.imgUrl = file_url;
+      sendMsg('img')
+    }
+    // 文本改变事件
+    // function handleInput($event) {
+    //   data.enterMsg = $event.target.innerText
+    // }
     return {
       ...toRefs(data),
       listSelect,
@@ -449,9 +454,10 @@ export default {
       chatMessage,
       changeChatMsg,
       getLook,
-      smileClick,
       sendMsgRef,
       cancelPointClick,
+      getFileNmae,
+      // handleInput,
     }
   },
 }
@@ -578,6 +584,7 @@ export default {
         bottom: 40px;
         overflow-x: hidden;
         resize: none;
+        text-align: left;
       }
       .send {
         position: absolute;
@@ -609,12 +616,6 @@ export default {
 .el-icon-user,
 .el-icon-setting {
   color: #aaa;
-}
-.look {
-  position: absolute;
-  right: 0;
-  bottom: 30px;
-  z-index: 999;
 }
 ::-webkit-scrollbar {
   width: 6px; /*高宽分别对应横竖滚动条的尺寸*/

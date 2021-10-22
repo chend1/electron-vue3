@@ -10,7 +10,7 @@
         <div class="photo">
           <div class="img">
             <img :src="item.avatar" alt="" />
-            <div class="point" v-if="item.pointData.length > 0 && !(item.pointData[0] instanceof Object)">
+            <div class="point" v-if="item.pointData.length > 0 && !(item.pointData[0] instanceof Object) && isActive !== item.id">
               {{ item.pointData.length }}
             </div>
           </div>

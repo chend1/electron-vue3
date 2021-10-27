@@ -80,7 +80,7 @@ export default {
         width: 40px;
         height: 40px;
         .img {
-          width: 100%;
+          width: 40px;
           position: relative;
           img {
             width: 100%;
@@ -101,7 +101,9 @@ export default {
       }
       .user {
         flex: 1;
-        padding-left: 10px;
+        padding: 0 10px;
+        box-sizing: border-box;
+        overflow: hidden;
         .top {
           width: 100%;
           display: flex;
@@ -116,6 +118,9 @@ export default {
           width: 100%;
           color: #999;
           text-align: left;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
         }
       }
     }

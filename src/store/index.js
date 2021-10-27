@@ -51,7 +51,15 @@ const store = createStore({
       state.isGroup = isGroup
     },
     // 用户列表
+    getUserList(state, userList){
+      state.userList = userList;
+      localStorage.setItem('userList', JSON.stringify(userList))
+    },
     // 群聊列表
+    getGroupList(state, groupList){
+      state.groupList = groupList;
+      localStorage.setItem('groupList', JSON.stringify(groupList))
+    }
   },
 })
 

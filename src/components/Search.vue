@@ -8,47 +8,169 @@
         class="search-input"
       />
     </div>
-    <div class="add">+</div>
+    <div class="add" @click="addChatClik">
+      +
+      <div class="tool_chat" v-show="isChat">
+        <ul>
+          <li @click="addFriend">添加好友</li>
+          <li @click="addGroup">创建群聊</li>
+        </ul>
+      </div>
+    </div>
+    <!-- 添加好友 -->
+    <el-dialog v-model="isAddFriend" top="30%" title="添加好友">
+      <div class="friend_input">
+        <el-input
+          v-model="friendNmae"
+          size="small"
+          placeholder="请输入用户名！"
+        />
+      </div>
+      <el-button type="primary" size="mini">立即查找</el-button>
+    </el-dialog>
+    <!-- 创建群聊 -->
+    <el-dialog v-model="isAddGroup" width="600px" top="15%" title="创建群聊">
+      <div class="box">
+        <div class="left" style="text-align: left">
+          <!-- <el-input
+            v-model="searchName"
+            size="small"
+            placeholder="请输入用户名"
+          /> -->
+          <el-checkbox v-model="checkAll" @change="checkAllClick"
+            >全选</el-checkbox
+          >
+          <div class="userList">
+            <el-checkbox-group
+              v-model="checkedLists"
+              @change="handleCheckedChange"
+            >
+              <el-checkbox
+                v-for="user in userList"
+                :key="user.id"
+                :label="user.id"
+                >{{ user.name }}</el-checkbox
+              >
+            </el-checkbox-group>
+          </div>
+        </div>
+        <div class="right">
+          <p>
+            <span>群名称：</span
+            ><el-input
+              v-model="searchName"
+              size="mini"
+              placeholder="请输入群名称"
+            />
+          </p>
+          <ul>
+            <li v-for="item in users" :key="item.id">
+              <div class="photo">
+                <img :src="item.avatar" alt="" />
+              </div>
+              <div class="name">{{ item.name }}</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="bottom">
+        <el-button plain size="mini">取消</el-button>
+        <el-button type="primary" size="mini">Primary</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script>
-import { reactive, toRefs } from '@vue/reactivity'
+import { computed, reactive, toRefs } from '@vue/reactivity'
+import { useStore } from 'vuex'
 export default {
   emits: [],
   setup() {
+    const store = useStore()
     let data = reactive({
-      searchData: ''
+      searchData: '',
+      isChat: false,
+      isAddFriend: false,
+      friendNmae: '',
+      isAddGroup: false,
+      userList: store.state.userList,
+      // 好友列表
+      checkedLists: [],
+      // 全选
+      checkAll: false,
+      searchName: '',
     })
 
+    // 添加聊天点击事件
+    function addChatClik() {
+      data.isChat = !data.isChat
+    }
+    // 添加好友
+    function addFriend() {
+      data.isAddFriend = true
+    }
+    // 添加群聊
+    function addGroup() {
+      data.isAddGroup = true
+    }
+    // checkAllClick
+    function checkAllClick(val) {
+      console.log(val, data.userList)
+      let selectArr = data.userList.map((item) => {
+        return item.id
+      })
+      data.checkedLists = val ? selectArr : []
+    }
+    // checkAllClick
+    function handleCheckedChange(value) {
+      console.log(value)
+      const checkedCount = value.length
+      data.checkAll = checkedCount === data.userList.length
+    }
+    const users = computed(() => {
+      let userList = data.userList.filter((item) => {
+        console.log(item)
+        return data.checkedLists.indexOf(item.id) >= 0
+      })
+      console.log(userList)
+      return userList
+    })
+    console.log(users)
     return {
-      ...toRefs(data)
+      ...toRefs(data),
+      addChatClik,
+      addFriend,
+      addGroup,
+      checkAllClick,
+      handleCheckedChange,
+      users,
     }
   },
 }
 </script>
 
 <style scoped lang="less">
-.search{
+.search {
   display: flex;
   justify-content: space-around;
   align-items: center;
-  .search-input{
+  .search-input {
     height: 30px;
     line-height: 30px;
-    :deep(input){
+    :deep(input) {
       line-height: 30px;
       height: 30px !important;
-      width: 190px
+      width: 190px;
     }
-    :deep(span){
+    :deep(span) {
       line-height: 30px;
-      i{
+      i {
         line-height: 30px;
       }
     }
   }
-  .add{
+  .add {
     width: 30px;
     height: 30px;
     font-size: 30px;
@@ -59,7 +181,106 @@ export default {
     font-weight: 300;
     margin-right: 8px;
     cursor: pointer;
+    position: relative;
+    user-select: none;
+    .tool_chat {
+      width: 100px;
+      box-sizing: border-box;
+      border-radius: 5px;
+      background-color: #35393e;
+      position: absolute;
+      top: 40px;
+      right: -10px;
+      font-size: 14px;
+      color: #fff;
+      user-select: none;
+      ul {
+        padding: 5px 0;
+        li {
+          line-height: 40px;
+          &:hover {
+            background-color: #5c5e61;
+          }
+        }
+      }
+    }
+  }
+  .friend_input {
+    width: 60%;
+    margin: 0 auto 30px;
   }
 }
+.box {
+  display: flex;
+  margin-top: -20px;
+  margin-bottom: 20px;
+  .left {
+    flex: 1;
+    overflow: hidden;
+    .userList {
+      height: 360px;
+      overflow-y: auto;
+    }
+  }
+  .right {
+    flex: 2;
+    p {
+      width: 100%;
+      text-align: center;
+      line-height: 40px;
+      font-size: 26px;
+    }
+    ul{
+      height: 360px;
+      overflow-y: auto;
+      box-sizing: border-box;
+      padding: 20px 10px;
+      li{
+        width: 20%;
+        float: left;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+        .photo{
+          width: 40px;
+          height: 40px;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          img{
+            width: 100%;
+          }
+        }
+        .name{
+          width: 100%;
+          line-height: 30px;
+          font-size: 14px;
+          text-align: center;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+  }
+}
+::-webkit-scrollbar {
+  width: 6px; /*高宽分别对应横竖滚动条的尺寸*/
+  height: 1px;
+  right: 10px;
+}
+::-webkit-scrollbar-thumb {
+  /*滚动条里面小方块*/
+  border-radius: 3px;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  background: #afafaf;
+}
+::-webkit-scrollbar-track {
+  /*滚动条里面轨道*/
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+  background: #ededed;
+}
 </style>
-

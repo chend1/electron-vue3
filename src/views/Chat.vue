@@ -46,7 +46,7 @@
         </div>
         <div class="desc" @click="showUserMsg">
           <span>···</span>
-          <div class="userMsg" :class="{ active: isShow ? true : false }">
+          <div class="userMsg" :class="{ active: isShow  }" @click.stop>
             <user-msg
               :userMsg="isGroup ? group : user"
               :isGroup="isGroup"
@@ -132,7 +132,7 @@ export default {
     UserMsg,
     Look,
     UploadImg,
-    LoadAudio
+    LoadAudio,
   },
   setup() {
     // store
@@ -221,6 +221,8 @@ export default {
         data.toUserId = data.userId
         // 初始化聊天信息
         getUserChatMsg()
+        // 存储userlist
+        store.commit('getUserList',userList)
       })
     }
     // 获取群聊列表
@@ -237,6 +239,8 @@ export default {
         data.toGroupId = data.group.id
         // 初始化聊天信息
         getGroupChatMsg()
+        // 存储groupList
+        store.commit('getGroupList',groupList)
       })
     }
     // 更新聊天列表 type true 用户  false 群聊
@@ -321,21 +325,37 @@ export default {
     // 监听信息
     function scoketOnMsg(e) {
       let userInfo = JSON.parse(e.data)
-      console.log('2222', userInfo)
+      console.log('userInfo', userInfo)
       userInfo.msg = decodeURIComponent(userInfo.msg)
-      console.log('2222', userInfo)
-      if (userInfo.channel_type === 1) {
-        // 更新聊天信息
-        getUserChatMsg()
-        changChatList(userInfo, true)
-      } else {
-        // 更新群聊信息
-        console.log('更新群聊消息')
-        getGroupChatMsg()
-        changChatList(userInfo, false)
+      switch (userInfo.code) {
+        case 0:
+          // data.Scoket.send('HeartBeat')
+          setTimeout(() => {
+            data.Scoket.send('HeartBeat')
+          }, 30000)
+          break
+        case 200:
+          if (userInfo.channel_type === 1) {
+            // 更新聊天信息
+            getUserChatMsg()
+            changChatList(userInfo, true)
+          } else {
+            // 更新群聊信息
+            console.log('更新群聊消息')
+            getGroupChatMsg()
+            changChatList(userInfo, false)
+          }
+          break
+        case 401:
+          console.log('敏感词汇')
+          break
+        case 1000:
+          console.log('用户上线了')
+          break
+        case 5000:
+          console.log('用户离线了')
+          break
       }
-      // 发送消息后清空
-      data.enterMsg = ''
     }
     // 监听聊天信息是否改变
     function changeChatMsg() {
@@ -397,19 +417,19 @@ export default {
       }
     }
     // 发送信息
-    function sendMsg(e,type) {
+    function sendMsg(e, type) {
       data.enterMsg = data.enterMsg.replace(/^\s*|\s*$/g, '')
       data.isLook = false
       let msg = ''
       if (data.enterMsg === '' && data.imgUrl === '') {
         return
       }
-      console.log(22222222,type);
-      if(type === 'img'){
-        console.log('data.imgUrl',data.imgUrl);
+      console.log(22222222, type)
+      if (type === 'img') {
+        console.log('data.imgUrl', data.imgUrl)
         msg = data.imgUrl
       }
-      if(type === undefined){
+      if (type === undefined) {
         msg = data.enterMsg
       }
 
@@ -422,6 +442,8 @@ export default {
         status: 0,
       }
       data.Scoket.send(JSON.stringify(userInfo))
+      // 发送消息后清空
+      data.enterMsg = ''
     }
     // 用户信息点击事件
     function showUserMsg() {
@@ -435,7 +457,7 @@ export default {
     }
     // 获取图片地址
     function getFileNmae(file_url) {
-      data.imgUrl = file_url;
+      data.imgUrl = file_url
       sendMsg('img')
     }
     // 文本改变事件
@@ -531,7 +553,7 @@ export default {
           width: 0;
           height: 800px;
           border-left: 1px solid #ddd;
-          transition: all 0.5s;
+          transition: all 0.3s;
           overflow: hidden;
           &.active {
             width: 300px;

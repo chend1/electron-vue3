@@ -16,15 +16,18 @@
             <img :src="chatMsg.user.avatar" alt="" v-else />
           </div>
           <div v-else>
-            <img :src="item.users.avatar" alt=""  >
+            <img :src="item.users.avatar" alt="" />
           </div>
-          <!-- <img :src="userInfo.photo" alt="" v-if="item.user_id === userInfo.id" />
-          <img :src="isGroup ? item.users.avatar : selectUser.avatar" alt="" v-else /> -->
         </div>
         <div class="user">
           <div class="name" v-if="isGroup">{{ item.users.name }}</div>
           <div class="msg">
-            <p>{{ item.msg }}</p>
+            <img
+              v-if="item.msg_type === 2"
+              :src="imgIsInvalid(item.msg) ? item.msg : defaultImg"
+              @load="imgLoad"
+            />
+            <p v-if="item.msg_type === 1">{{ item.msg }}</p>
           </div>
         </div>
       </li>
@@ -36,54 +39,51 @@
 import { computed, reactive, toRefs } from '@vue/reactivity'
 import { onUpdated, watch } from '@vue/runtime-core'
 import { useStore } from 'vuex'
-// import { getInformationHistory, getGroupMessageList } from '@/api/message.js'
+import { judgeImgUrl } from '@/assets/js/utils.js'
 export default {
   emits: ['changeChatMsg'],
   props: {
     toId: Number,
-    // selectUser: {
-    //   type: Object,
-    //   default(){
-    //     return {}
-    //   }
-    // }
   },
   setup(props, context) {
-    // store
-    // console.log(props);
-    // const toId = toRef(props, 'toId')
-    // console.log(toId.value)
     const store = useStore()
-
     let data = reactive({
       chatMsg: {},
       chatType: !store.state.isGroup,
+      defaultImg: require('@/assets/image/invalid.jpg'),
     })
-
     // 聊天类型
     const isGroup = computed(() => store.state.isGroup)
     // 聊天消息
     const userChatMsg = computed(() => store.state.userChatMsg)
     const groupChatMsg = computed(() => store.state.groupChatMsg)
     data.chatMsg = data.chatType ? userChatMsg : groupChatMsg
-    console.log(data.chatMsg.list)
+    // 监听聊天类型
     watch(
       () => store.state.isGroup,
-      (newVal, oldVal) => {
+      (newVal) => {
         data.chatType = !newVal
         data.chatMsg = data.chatType ? userChatMsg : groupChatMsg
-        console.log(newVal, oldVal)
       }
     )
+    // 信息改变完成后修改滚动距离
     onUpdated(() => {
       context.emit('changeChatMsg')
     })
-
+    function imgLoad() {
+      context.emit('changeChatMsg')
+    }
+    // 判断图片是否失效
+    async function imgIsInvalid(url) {
+      return await judgeImgUrl(url)
+    }
     computed(() => {})
     return {
       ...toRefs(data),
       userInfo: computed(() => store.state.userInfo),
       isGroup,
+      imgLoad,
+      imgIsInvalid,
     }
   },
 }
@@ -108,7 +108,7 @@ export default {
         }
       }
       .user {
-        width: 40%;
+        width: 60%;
         text-align: left;
         .name {
           display: inline-block;
@@ -120,6 +120,11 @@ export default {
         .msg {
           margin-left: 10px;
           line-height: 30px;
+          img {
+            max-width: 90%;
+            width: auto;
+            height: auto;
+          }
           p {
             display: inline-block;
             padding: 0 10px;

@@ -36,10 +36,22 @@ export default {
     function fileChange(e) {
       let formData = new FormData()
       formData.append('Smfile', e.target.files[0])
-      uploadImage(formData).then((res) => {
-        console.log(res);
-        emit('getFileNmae',res.url)
-      })
+      uploadImage(formData)
+        .then((res) => {
+          console.log(res);
+          let index = res.message.indexOf('http')
+          let msg = res.message.substring(index)
+          console.log(msg)
+          // let
+          if (index>0) {
+            emit('getFileNmae', msg)
+          } else {
+            emit('getFileNmae', res.data.url)
+          }
+        })
+        .catch((err) => {
+          console.log(err)
+        })
     }
 
     return {

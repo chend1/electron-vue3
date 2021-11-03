@@ -46,7 +46,7 @@
         </div>
         <div class="desc" @click="showUserMsg">
           <span>···</span>
-          <div class="userMsg" :class="{ active: isShow  }" @click.stop>
+          <div class="userMsg" :class="{ active: isShow }" @click.stop>
             <user-msg
               :userMsg="isGroup ? group : user"
               :isGroup="isGroup"
@@ -115,12 +115,6 @@ import { onMounted } from '@vue/runtime-core'
 import { useStore } from 'vuex'
 import { getUserList, getGroupList } from '@/api/list.js'
 import { getInformationHistory, getGroupMessageList } from '@/api/message.js'
-
-// import {
-//   scoketOnMsg,
-//   scoketStart,
-//   scoketOnError,
-// } from '@/assets/js/webScoket.js'
 export default {
   name: 'Chat',
   components: {
@@ -222,7 +216,7 @@ export default {
         // 初始化聊天信息
         getUserChatMsg()
         // 存储userlist
-        store.commit('getUserList',userList)
+        store.commit('getUserList', userList)
       })
     }
     // 获取群聊列表
@@ -240,11 +234,12 @@ export default {
         // 初始化聊天信息
         getGroupChatMsg()
         // 存储groupList
-        store.commit('getGroupList',groupList)
+        store.commit('getGroupList', groupList)
       })
     }
     // 更新聊天列表 type true 用户  false 群聊
     function changChatList(list, type) {
+      console.log(222222222222, list)
       if (type) {
         let list_user = data.friendList.map((item) => {
           // 判断是不是接收者
@@ -255,15 +250,25 @@ export default {
             if (item.pointData[0] instanceof Object) {
               item.pointData = []
             }
-            item.pointData.push(list.msg)
+            if (list.msg_type === 1) {
+              item.pointData.push(list.msg)
+            }
+            if (list.msg_type) {
+              item.pointData.push('[图片]')
+            }
           }
           // 发送者
           if (
             store.state.userInfo.id !== list.to_id &&
             item.id === list.to_id
           ) {
-            // item.pointData = ''
-            item.pointData = [{ type: true, msg: list.msg }]
+            if (list.msg_type === 2) {
+              item.pointData = [{ type: true, msg: '[图片]' }]
+            }
+            if (list.msg_type === 1) {
+              item.pointData = [{ type: true, msg: list.msg }]
+            }
+            // item.pointData = [{ type: true, msg: list.msg }]
           }
           return item
         })
@@ -271,7 +276,7 @@ export default {
         console.log(data.friendList)
       } else {
         let list_group = data.chatGroupList.map((item) => {
-          // 判断是不是接收者
+          // 判断是不是接收者,接收者添加提示信息
           if (
             item.id === list.to_id &&
             store.state.userInfo.id !== list.from_id
@@ -279,9 +284,10 @@ export default {
             if (item.pointData[0] instanceof Object) {
               item.pointData = []
             }
-            item.pointData.push(list.msg)
+            if (list.msg.indexOf('http') > -1 && list.msg.indexOf())
+              item.pointData.push(list.msg)
           }
-          // 判断是不是发送者
+          // 判断是不是发送者 发送者覆盖提示信息
           if (
             item.id === list.to_id &&
             store.state.userInfo.id === list.from_id
@@ -325,7 +331,7 @@ export default {
     // 监听信息
     function scoketOnMsg(e) {
       let userInfo = JSON.parse(e.data)
-      console.log('userInfo', userInfo)
+      // console.log('userInfo', userInfo)
       userInfo.msg = decodeURIComponent(userInfo.msg)
       switch (userInfo.code) {
         case 0:
@@ -417,27 +423,18 @@ export default {
       }
     }
     // 发送信息
-    function sendMsg(e, type) {
+    function sendMsg(msg_type) {
+      console.log(typeof msg_type === 'object')
       data.enterMsg = data.enterMsg.replace(/^\s*|\s*$/g, '')
       data.isLook = false
-      let msg = ''
-      if (data.enterMsg === '' && data.imgUrl === '') {
+      if (data.enterMsg === '') {
         return
       }
-      console.log(22222222, type)
-      if (type === 'img') {
-        console.log('data.imgUrl', data.imgUrl)
-        msg = data.imgUrl
-      }
-      if (type === undefined) {
-        msg = data.enterMsg
-      }
-
       let userInfo = {
         from_id: store.state.userInfo.id,
-        msg: encodeURIComponent(msg),
+        msg: encodeURIComponent(data.enterMsg),
         to_id: store.state.isGroup ? data.group.id : data.user.id,
-        msg_type: 1,
+        msg_type: typeof msg_type !== 'object' ? msg_type : 1,
         channel_type: store.state.isGroup ? 2 : 1,
         status: 0,
       }
@@ -457,13 +454,10 @@ export default {
     }
     // 获取图片地址
     function getFileNmae(file_url) {
-      data.imgUrl = file_url
-      sendMsg('img')
+      // data.imgUrl = file_url
+      data.enterMsg = file_url
+      sendMsg(2)
     }
-    // 文本改变事件
-    // function handleInput($event) {
-    //   data.enterMsg = $event.target.innerText
-    // }
     return {
       ...toRefs(data),
       listSelect,

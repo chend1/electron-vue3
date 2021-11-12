@@ -2,16 +2,24 @@
   <div class="group-list">
     <ul>
       <li
-        v-for="item in chatGroupList"
+        v-for="item in groupList"
         :key="item.id"
         @click="groupClick(item)"
-        :class="{ active: isActive < 0 ? groupId === item.id : isActive === item.id }"
+        :class="{
+          active: isActive === item.id,
+        }"
       >
         <div class="photo">
           <div class="img">
             <img :src="item.group_avatar" alt="" />
-            <div class="point" v-if="item.pointData.length > 0 && !(item.pointData[0] instanceof Object)">
-              {{ pointData.length }}
+            <div
+              class="point"
+              v-if="
+                item.pointData.length > 0 &&
+                  !(item.pointData[0] instanceof Object)
+              "
+            >
+              {{ item.pointData.length }}
             </div>
           </div>
         </div>
@@ -20,7 +28,13 @@
             <div class="name">{{ item.group_name }}</div>
             <div class="time">{{ item.send_time }}</div>
           </div>
-          <div class="msg">{{ (item.pointData[0] instanceof Object) ? item.pointData[0].msg : item.pointData[item.pointData.length-1] }}</div>
+          <div class="msg">
+            {{
+              item.pointData[0] instanceof Object
+                ? item.pointData[0].msg
+                : item.pointData[item.pointData.length - 1]
+            }}
+          </div>
         </div>
       </li>
     </ul>
@@ -28,28 +42,33 @@
 </template>
 
 <script>
-import { reactive, toRefs } from '@vue/reactivity'
+import { reactive, toRefs, computed } from '@vue/reactivity'
+import { useStore } from 'vuex'
+import { onMounted } from 'vue-demi'
 export default {
   emits: ['groupClick'],
-  props: {
-    chatGroupList: {
-      type: Array,
-      default() {
-        return []
-      },
-    },
-    groupId: Number,
-  },
+  props: {},
   setup(prop, context) {
+    const store = useStore()
     let data = reactive({
-      pointData: [],
-      isActive: -1,
+      isActive: store.state.toGroupId,
+      groupList: computed(() => store.state.group.groupList),
     })
     // 群聊点击
     function groupClick(group) {
+      console.log(group)
       data.isActive = group.id
       context.emit('groupClick', group)
+      store.commit('getGroupId', group.id)
     }
+    onMounted(() => {
+      if (data.isActive > 0) {
+        let group = data.groupList.filter(item => {
+          return item.id === data.isActive
+        })
+        context.emit('groupClick', group[0])
+      }
+    })
     return {
       ...toRefs(data),
       groupClick,

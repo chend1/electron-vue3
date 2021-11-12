@@ -1,5 +1,5 @@
 <template>
-  <div class="msg-list" v-if="chatMsg.list.length > 0">
+  <div class="msg-list" v-if="chatMsg">
     <ul :class="isGroup ? 'group' : ''">
       <li
         v-for="item in chatMsg.list"
@@ -16,11 +16,11 @@
             <img :src="chatMsg.user.avatar" alt="" v-else />
           </div>
           <div v-else>
-            <img :src="item.users.avatar" alt="" />
+            <img :src="item.users && item.users.avatar" alt="" />
           </div>
         </div>
         <div class="user">
-          <div class="name" v-if="isGroup">{{ item.users.name }}</div>
+          <div class="name" v-if="isGroup">{{ item.users && item.users.name }}</div>
           <div class="msg">
             <img
               v-if="item.msg_type === 2"
@@ -52,18 +52,18 @@ export default {
       chatType: !store.state.isGroup,
       defaultImg: require('@/assets/image/invalid.jpg'),
     })
-    // 聊天类型
-    const isGroup = computed(() => store.state.isGroup)
     // 聊天消息
-    const userChatMsg = computed(() => store.state.userChatMsg)
-    const groupChatMsg = computed(() => store.state.groupChatMsg)
+    const userChatMsg = computed(() => store.state.user.userChatMsg)
+    const groupChatMsg = computed(() => store.state.group.groupChatMsg)
     data.chatMsg = data.chatType ? userChatMsg : groupChatMsg
+console.log(data.chatMsg);
     // 监听聊天类型
     watch(
       () => store.state.isGroup,
       (newVal) => {
         data.chatType = !newVal
         data.chatMsg = data.chatType ? userChatMsg : groupChatMsg
+        console.log(data.chatMsg);
       }
     )
     // 信息改变完成后修改滚动距离
@@ -81,7 +81,7 @@ export default {
     return {
       ...toRefs(data),
       userInfo: computed(() => store.state.userInfo),
-      isGroup,
+      isGroup: computed(() => store.state.isGroup),
       imgLoad,
       imgIsInvalid,
     }

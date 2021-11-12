@@ -2,15 +2,24 @@
   <div class="user-list">
     <ul>
       <li
-        v-for="item in friendList"
+        v-for="item in userList"
         :key="item.id"
         @click="userClick(item)"
-        :class="{ active: isActive < 0 ? userId === item.id : isActive === item.id }"
+        :class="{
+          active: isActive === item.id,
+        }"
       >
         <div class="photo">
           <div class="img">
             <img :src="item.avatar" alt="" />
-            <div class="point" v-if="item.pointData.length > 0 && !(item.pointData[0] instanceof Object) && isActive !== item.id">
+            <div
+              class="point"
+              v-if="
+                item.pointData.length > 0 &&
+                  !(item.pointData[0] instanceof Object) &&
+                  isActive !== item.id
+              "
+            >
               {{ item.pointData.length }}
             </div>
           </div>
@@ -20,7 +29,13 @@
             <div class="name">{{ item.name }}</div>
             <div class="time">{{ item.send_time }}</div>
           </div>
-          <div class="msg">{{ (item.pointData[0] instanceof Object) ? item.pointData[0].msg : item.pointData[item.pointData.length-1] }}</div>
+          <div class="msg">
+            {{
+              item.pointData[0] instanceof Object
+                ? item.pointData[0].msg
+                : item.pointData[item.pointData.length - 1]
+            }}
+          </div>
         </div>
       </li>
     </ul>
@@ -28,28 +43,46 @@
 </template>
 
 <script>
-import { reactive, toRefs } from '@vue/reactivity'
+import { computed, reactive, toRefs } from '@vue/reactivity'
+import { useStore } from 'vuex'
+import { onMounted } from 'vue-demi'
 export default {
   emits: ['userClick'],
-  props: {
-    friendList: {
-      type: Array,
-      default() {
-        return []
-      },
-    },
-    userId: Number,
-  },
+  props: {},
   setup(props, context) {
+    const store = useStore()
     let data = reactive({
-      pointData: [],
-      isActive: -1,
+      isActive: store.state.toUserId,
+      userList: computed(() => store.state.user.userList)
     })
     // 好友点击事件
     function userClick(user) {
       data.isActive = user.id
       context.emit('userClick', user)
+      store.commit('getUserId', user.id)
     }
+    
+    onMounted(() => {
+      if (data.isActive > 0) {
+        let user = data.userList.filter(item => {
+          return item.id === data.isActive
+        })
+        context.emit('userClick', user[0])
+      }
+    })
+    // onMounted(() => {
+    //   // 默认用户
+    // })
+    // if (data.userList[0]) {
+    //   // data.isActive = data.userList[0].id
+    //   // store.dispatch('user/getUserChatMsg', data.userList[0].id)
+    //   // context.emit('userClick', data.userList[0])
+    // }
+    // nextTick(() => {
+    //   data.isActive = data.userList[0].id
+    //   store.dispatch('user/getUserChatMsg', data.userList[0].id)
+    //   context.emit('userClick', data.userList[0])
+    // })
     return {
       ...toRefs(data),
       userClick,

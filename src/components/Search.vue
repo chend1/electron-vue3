@@ -58,9 +58,10 @@
           <p>
             <span>群名称：</span
             ><el-input
-              v-model="searchName"
+              v-model="groupName"
               size="mini"
               placeholder="请输入群名称"
+              class="groupNmae"
             />
           </p>
           <ul>
@@ -74,8 +75,12 @@
         </div>
       </div>
       <div class="bottom">
-        <el-button plain size="mini">取消</el-button>
-        <el-button type="primary" size="mini">Primary</el-button>
+        <el-button plain size="mini" @click="isAddGroup = false"
+          >取消</el-button
+        >
+        <el-button type="primary" size="mini" @click="createGroupClick"
+          >创建</el-button
+        >
       </div>
     </el-dialog>
   </div>
@@ -84,9 +89,11 @@
 <script>
 import { computed, reactive, toRefs } from '@vue/reactivity'
 import { useStore } from 'vuex'
+import { createGroup } from '@/api/createChat.js'
+import { ElMessage } from 'element-plus'
 export default {
   emits: [],
-  setup() {
+  setup(props, { emit }) {
     const store = useStore()
     let data = reactive({
       searchData: '',
@@ -94,12 +101,12 @@ export default {
       isAddFriend: false,
       friendNmae: '',
       isAddGroup: false,
-      userList: store.state.userList,
-      // 好友列表
+      userList: store.state.user.userList,
+      // 选中的好友列表
       checkedLists: [],
       // 全选
       checkAll: false,
-      searchName: '',
+      groupName: '',
     })
 
     // 添加聊天点击事件
@@ -130,13 +137,52 @@ export default {
     }
     const users = computed(() => {
       let userList = data.userList.filter((item) => {
-        console.log(item)
         return data.checkedLists.indexOf(item.id) >= 0
       })
-      console.log(userList)
       return userList
     })
-    console.log(users)
+    // 创建群聊
+    function createGroupClick() {
+      if(data.groupName === ''){
+        ElMessage({
+          showClose: true,
+          message: '请填写群聊名！',
+          type: 'warning',
+        })
+        return
+      }
+      if (data.checkedLists.length <= 0) {
+        ElMessage({
+          showClose: true,
+          message: '请先选择群聊用户！',
+          type: 'warning',
+        })
+        return
+      }
+      createGroup({
+        group_name: data.groupName,
+        user_id: data.checkedLists,
+      }).then((res) => {
+        console.log(res)
+        data.isAddGroup = false
+        if(res.code === 200){
+          ElMessage({
+            showClose: true,
+            message: res.message,
+            type: 'success',
+          })
+          emit('createGroupSuccess')
+        } else {
+          ElMessage({
+            showClose: true,
+            message: res.message,
+            type: 'success',
+          })
+        }
+      }).cahch( err => {
+        console.log(err);
+      })
+    }
     return {
       ...toRefs(data),
       addChatClik,
@@ -145,6 +191,7 @@ export default {
       checkAllClick,
       handleCheckedChange,
       users,
+      createGroupClick,
     }
   },
 }
@@ -223,37 +270,46 @@ export default {
     }
   }
   .right {
-    flex: 2;
+    flex: 2.5;
+    box-sizing: border-box;
+    padding: 0 10px 0 20px;
     p {
       width: 100%;
       text-align: center;
       line-height: 40px;
-      font-size: 26px;
+      font-size: 20px;
+      display: flex;
+      span {
+        line-height: 28px;
+      }
+      .groupNmae {
+        width: 200px;
+      }
     }
-    ul{
+    ul {
       height: 360px;
       overflow-y: auto;
       box-sizing: border-box;
-      padding: 20px 10px;
-      li{
+      padding: 20px 0px;
+      li {
         width: 20%;
         float: left;
         display: flex;
         justify-content: center;
         flex-wrap: wrap;
         margin-bottom: 10px;
-        .photo{
+        .photo {
           width: 40px;
           height: 40px;
           overflow: hidden;
           display: flex;
           align-items: center;
           justify-content: center;
-          img{
+          img {
             width: 100%;
           }
         }
-        .name{
+        .name {
           width: 100%;
           line-height: 30px;
           font-size: 14px;

@@ -135,20 +135,11 @@ export default {
     function loginClick() {
       formRef.value.validate((valid) => {
         if (valid) {
-          console.log(222)
-          // store.commit(
-          //   'getToken',
-          //   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIzMCIsIk5hbWUiOiJhZG1pbiIsIkF2YXRhciI6Imh0dHBzOi8vY2RuLmxlYXJua3UuY29tLy91cGxvYWRzL2NvbW11bml0aWVzL1k3ZkVsWVl3Q0ZqVFRYQ2R3UE5XLnBuZyEvYm90aC80NHg0NCIsIkVtYWlsIjoiIiwiZXhwIjoxNjM0NjAwODQ5LCJpc3MiOiJJSmprS0xNTk81NjdQUVgxMlItIiwibmJmIjoxNjMzOTE0NjQ5fQ.biv_mLOxQNo62k9gjfz2zreODFz6RAfVRcwmi8Zds0Y'
-          // )
-          // router.push({
-          //   path: '/chat'
-          // })
           // 发起登录请求
           login({
             name: data.ruleForm.account,
             password: data.ruleForm.password,
           }).then((res) => {
-            console.log(res)
             store.commit('getUserInfo',res.data)
             router.push({
               path: '/chat',

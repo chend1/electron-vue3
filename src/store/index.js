@@ -1,25 +1,27 @@
-
 import { createStore } from 'vuex'
+import { userModule } from './modules/user'
+import { groupModule } from './modules/group'
 
 const store = createStore({
   state() {
     return {
       token: localStorage.getItem('token') || '',
+      // 用户信息
       userInfo: localStorage.getItem('userInfo')
         ? JSON.parse(localStorage.getItem('userInfo'))
         : {},
-      userChatMsg: localStorage.getItem('userChatMsg')
-        ? JSON.parse(localStorage.getItem('userChatMsg'))
-        : [],
-      groupChatMsg: localStorage.getItem('groupChatMsg')
-        ? JSON.parse(localStorage.getItem('groupChatMsg'))
-        : [],
       // 是否是群聊
-      isGroup: JSON.parse(localStorage.getItem('isGroup')) || false,
-      // 好友列表
-      userList: JSON.parse(localStorage.getItem('userList')) || [],
-      // 群聊列表
-      groupList: JSON.parse(localStorage.getItem('groupList')) || [],
+      isGroup: localStorage.getItem('isGroup')
+        ? JSON.parse(localStorage.getItem('isGroup'))
+        : false,
+      // 发送目标用户
+      toUserId: localStorage.getItem('toUserId')
+        ? JSON.parse(localStorage.getItem('toUserId'))
+        : -1,
+      // 发送群聊
+      toGroupId: localStorage.getItem('toGroupId')
+        ? JSON.parse(localStorage.getItem('toGroupId'))
+        : -1,
     }
   },
   mutations: {
@@ -32,34 +34,26 @@ const store = createStore({
       state.userInfo.photo = userInfo.avatar
       localStorage.setItem('userInfo', JSON.stringify(state.userInfo))
     },
-    // 获取当前用户聊天信息
-    getUserChatMsg(state, userChatMsg) {
-      console.log('用户聊天信息');
-      localStorage.setItem('userChatMsg', JSON.stringify(userChatMsg))
-      state.userChatMsg = userChatMsg
-    },
-    // 获取当前群聊信息
-    getGroupChatMsg(state, groupChatMsg) {
-      console.log('用户群聊信息');
-      localStorage.setItem('groupChatMsg', JSON.stringify(groupChatMsg))
-      state.groupChatMsg = groupChatMsg
-    },
     // 判断是否是群聊
     getChatType(state, isGroup) {
-      console.log(isGroup);
+      console.log(isGroup)
       localStorage.setItem('isGroup', isGroup)
       state.isGroup = isGroup
     },
-    // 用户列表
-    getUserList(state, userList){
-      state.userList = userList;
-      localStorage.setItem('userList', JSON.stringify(userList))
+    // 获取发送用户id
+    getUserId(state, toUserId){
+      state.toUserId = toUserId
+      localStorage.setItem('toUserId', toUserId)
     },
-    // 群聊列表
-    getGroupList(state, groupList){
-      state.groupList = groupList;
-      localStorage.setItem('groupList', JSON.stringify(groupList))
+    // 获取发送用户id
+    getGroupId(state, toGroupId){
+      state.toGroupId = toGroupId
+      localStorage.setItem('toGroupId', toGroupId)
     }
+  },
+  modules: {
+    user: userModule,
+    group: groupModule,
   },
 })
 

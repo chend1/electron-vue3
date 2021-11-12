@@ -21,21 +21,11 @@
     </div>
     <div class="chat-list">
       <div class="search-wrap">
-        <Search></Search>
+        <Search @createGroupSuccess="createGroupSuccess"></Search>
       </div>
       <div class="list">
-        <user-list
-          v-show="!isGroup"
-          :friendList="friendList"
-          :userId="userId"
-          @userClick="userClick"
-        ></user-list>
-        <group-list
-          v-show="isGroup"
-          :chatGroupList="chatGroupList"
-          :groupId="groupId"
-          @groupClick="groupClick"
-        ></group-list>
+        <user-list v-show="!isGroup" @userClick="userClick"></user-list>
+        <group-list v-show="isGroup" @groupClick="groupClick"></group-list>
       </div>
     </div>
     <div class="chat-msg">
@@ -55,6 +45,10 @@
         </div>
       </div>
       <div class="message" ref="scrollMsg">
+        <div class="msg-mask" v-if="isMask">
+          <p>点击左侧开始聊天</p>
+          <img src="@/assets/image/chat.gif" alt="">
+        </div>
         <chat-message
           :toId="!isGroup ? toUserId : toGroupId"
           @changeChatMsg="changeChatMsg"
@@ -62,6 +56,7 @@
         ></chat-message>
       </div>
       <div class="enter" @click="cancelPointClick">
+        <div class="mask" v-if="isMask"></div>
         <div class="enterType">
           <ul>
             <li>
@@ -83,15 +78,6 @@
           @keyup.enter="sendMsg"
           ref="sendMsgRef"
         ></textarea>
-        <!-- <div
-          contenteditable="true"
-          class="textarea"
-          v-html="enterMsg"
-          @keyup.enter="sendMsg"
-          @input="handleInput"
-          ref="sendMsgRef"
-        > 
-        </div>-->
         <div class="send">
           <div class="btn" @click="sendMsg">发送</div>
         </div>
@@ -113,8 +99,6 @@ import Look from '@/components/Look.vue'
 import { computed, reactive, ref, toRefs } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { useStore } from 'vuex'
-import { getUserList, getGroupList } from '@/api/list.js'
-import { getInformationHistory, getGroupMessageList } from '@/api/message.js'
 export default {
   name: 'Chat',
   components: {
@@ -134,20 +118,10 @@ export default {
     let data = reactive({
       // 输入的信息
       enterMsg: '',
-      // 是否选择好友列表 true: 好友  false: 群聊
-      // isUser: !store.state.isGroup,
-      // 好友列表
-      friendList: [],
-      // 群聊列表
-      chatGroupList: [],
       // 选中的好友信息
       user: [],
       // 选中的群聊
       group: [],
-      // 默认选中的用户
-      userId: 0,
-      // 默认选中的群聊
-      groupId: 0,
       // 发送目标用户
       toUserId: -1,
       // 发送群聊
@@ -157,6 +131,8 @@ export default {
       isShow: false,
       // 图片
       imgUrl: '',
+      // 是否显示遮罩
+      isMask: false,
     })
     // 修改滚动距离
     let scrollMsg = ref(null)
@@ -164,7 +140,6 @@ export default {
     let sendMsgRef = ref(null)
     function onScrollMsg() {
       let height = chatMessage.value.$el.clientHeight
-      console.log('onScrollMsg', height)
       scrollMsg.value.scrollTop = height
     }
     // 列表点击事件
@@ -177,161 +152,82 @@ export default {
         store.commit('getChatType', true)
       }
     }
-    // 获取用户聊天信息
-    function getUserChatMsg() {
-      console.log('getUserChatMsg')
-      getInformationHistory({
-        to_id: data.toUserId,
-      }).then((res) => {
-        console.log(res.data)
-        store.commit('getUserChatMsg', res.data)
-      })
-    }
-    // 获取群聊聊天信息
-    function getGroupChatMsg() {
-      console.log(data.toGroupId)
-      getGroupMessageList({
-        to_id: data.toGroupId,
-        channel_type: 2,
-      }).then((res) => {
-        console.log(res)
-        let mesList = {
-          users: false,
-          list: res.data,
-        }
-        store.commit('getGroupChatMsg', mesList)
-      })
-    }
     // 获取好友列表
-    function getUserNewList() {
-      getUserList().then((res) => {
-        let userList = res.data.list.map((item) => {
-          item.pointData = []
-          return item
-        })
-        data.friendList = userList
-        data.user = res.data.list[0]
-        data.userId = data.user.id
-        data.toUserId = data.userId
-        // 初始化聊天信息
-        getUserChatMsg()
-        // 存储userlist
-        store.commit('getUserList', userList)
-      })
+    function getUserList() {
+      store.dispatch('user/getUserList')
     }
     // 获取群聊列表
     function getGroupNewList() {
-      getGroupList().then((res) => {
-        console.log(222, res.data)
-        let groupList = res.data.map((item) => {
-          item.pointData = []
-          return item
-        })
-        data.chatGroupList = groupList
-        data.group = res.data[0]
-        data.groupId = data.group.id
-        data.toGroupId = data.group.id
-        // 初始化聊天信息
-        getGroupChatMsg()
-        // 存储groupList
-        store.commit('getGroupList', groupList)
-      })
+      store.dispatch('group/getGroupList')
     }
     // 更新聊天列表 type true 用户  false 群聊
-    function changChatList(list, type) {
-      console.log(222222222222, list)
-      if (type) {
-        let list_user = data.friendList.map((item) => {
-          // 判断是不是接收者
-          if (
-            store.state.userInfo.id === list.to_id &&
-            item.id === list.from_id
-          ) {
-            if (item.pointData[0] instanceof Object) {
-              item.pointData = []
-            }
-            if (list.msg_type === 1) {
-              item.pointData.push(list.msg)
-            }
-            if (list.msg_type) {
-              item.pointData.push('[图片]')
-            }
-          }
-          // 发送者
-          if (
-            store.state.userInfo.id !== list.to_id &&
-            item.id === list.to_id
-          ) {
-            if (list.msg_type === 2) {
-              item.pointData = [{ type: true, msg: '[图片]' }]
-            }
-            if (list.msg_type === 1) {
-              item.pointData = [{ type: true, msg: list.msg }]
-            }
-            // item.pointData = [{ type: true, msg: list.msg }]
-          }
-          return item
-        })
-        data.friendList = list_user
-        console.log(data.friendList)
-      } else {
-        let list_group = data.chatGroupList.map((item) => {
-          // 判断是不是接收者,接收者添加提示信息
-          if (
-            item.id === list.to_id &&
-            store.state.userInfo.id !== list.from_id
-          ) {
-            if (item.pointData[0] instanceof Object) {
-              item.pointData = []
-            }
-            if (list.msg.indexOf('http') > -1 && list.msg.indexOf())
-              item.pointData.push(list.msg)
-          }
-          // 判断是不是发送者 发送者覆盖提示信息
-          if (
-            item.id === list.to_id &&
-            store.state.userInfo.id === list.from_id
-          ) {
-            item.pointData = [{ type: true, msg: list.msg }]
-          }
-          return item
-        })
-        data.chatGroupList = list_group
-      }
-    }
+    // function changChatList(list, type) {
+    //   console.log(222222222222, list)
+    //   if (type) {
+    //     // console.log(111);
+    //   } else {
+    //     let list_group = data.chatGroupList.map((item) => {
+    //       // 判断是不是接收者,接收者添加提示信息
+    //       if (
+    //         item.id === list.to_id &&
+    //         store.state.userInfo.id !== list.from_id
+    //       ) {
+    //         if (item.pointData[0] instanceof Object) {
+    //           item.pointData = []
+    //         }
+    //         if (list.msg_type === 1) {
+    //           item.pointData.push(list.msg)
+    //         }
+    //         if (list.msg_type) {
+    //           item.pointData.push('[图片]')
+    //         }
+    //       }
+    //       // 判断是不是发送者 发送者覆盖提示信息
+    //       if (
+    //         item.id === list.to_id &&
+    //         store.state.userInfo.id === list.from_id
+    //       ) {
+    //         if (list.msg_type === 2) {
+    //           item.pointData = [{ type: true, msg: '[图片]' }]
+    //         }
+    //         if (list.msg_type === 1) {
+    //           item.pointData = [{ type: true, msg: list.msg }]
+    //         }
+    //       }
+    //       return item
+    //     })
+    //     data.chatGroupList = list_group
+    //   }
+    // }
     // 取消聊天列表提示信息
-    function cancelPoint(id, type) {
-      console.log(type, id)
-      if (type) {
-        let userList = data.friendList.map((item) => {
-          // item.pointData = []
-          if (item.id === id && !(item.pointData[0] instanceof Object)) {
-            item.pointData[0] = {
-              msg: item.pointData[item.pointData.length - 1],
-            }
-          }
-          return item
-        })
-        data.friendList = userList
-      } else {
-        let groupList = data.chatGroupList.map((item) => {
-          if (item.id === id && !(item.pointData[0] instanceof Object)) {
-            item.pointData[0] = {
-              msg: item.pointData[item.pointData.length - 1],
-            }
-          }
-          return item
-        })
-        data.groupList = groupList
-      }
-    }
-
-    // 聊天框点击事件
-    function cancelPointClick() {}
+    // function cancelPoint(id, type) {
+    //   console.log(type, id)
+    //   if (type) {
+    //     // let userList = data.friendList.map((item) => {
+    //     //   // item.pointData = []
+    //     //   if (item.id === id && !(item.pointData[0] instanceof Object)) {
+    //     //     item.pointData[0] = {
+    //     //       msg: item.pointData[item.pointData.length - 1],
+    //     //     }
+    //     //   }
+    //     //   return item
+    //     // })
+    //     // data.friendList = userList
+    //   } else {
+    //     let groupList = data.chatGroupList.map((item) => {
+    //       if (item.id === id && !(item.pointData[0] instanceof Object)) {
+    //         item.pointData[0] = {
+    //           msg: item.pointData[item.pointData.length - 1],
+    //         }
+    //       }
+    //       return item
+    //     })
+    //     data.groupList = groupList
+    //   }
+    // }
     // 监听信息
     function scoketOnMsg(e) {
       let userInfo = JSON.parse(e.data)
-      // console.log('userInfo', userInfo)
       userInfo.msg = decodeURIComponent(userInfo.msg)
       switch (userInfo.code) {
         case 0:
@@ -343,13 +239,16 @@ export default {
         case 200:
           if (userInfo.channel_type === 1) {
             // 更新聊天信息
-            getUserChatMsg()
-            changChatList(userInfo, true)
+            // getUserChatMsg()
+            console.log(2222, userInfo)
+            store.dispatch('user/addUserChatMsg', userInfo)
+            // changChatList(userInfo, true)
           } else {
             // 更新群聊信息
-            console.log('更新群聊消息')
-            getGroupChatMsg()
-            changChatList(userInfo, false)
+            console.log('更新群聊信息', userInfo)
+            store.dispatch('group/addGroupChatMsg', userInfo)
+            // getGroupChatMsg()
+            // changChatList(userInfo, false)
           }
           break
         case 401:
@@ -379,29 +278,46 @@ export default {
     }
     onMounted(() => {
       scoketInit()
-      getUserNewList()
+      getUserList()
       getGroupNewList()
       sendMsgRef.value.focus()
+    })
+    // 判断遮罩是否显示
+    data.isMask = computed( () => {
+      let res = (data.toUserId == -1 && !store.state.isGroup) || (data.toGroupId == -1 && store.state.isGroup);
+      if(res){
+        sendMsgRef.value && sendMsgRef.value.blur()
+      }
+      return res;
     })
     // 用户点击事件
     function userClick(user) {
       data.user = user
+      // 点击自己不需要清空输入内容
+      if (data.toUserId !== user.id) {
+        data.enterMsg = ''
+      }
       data.toUserId = user.id
-      getUserChatMsg()
-      cancelPoint(user.id, true)
+      // 获取对应用户历史记录
+      store.dispatch('user/getUserChatMsg', user.id)
+      // getUserChatMsg()
+      // cancelPoint(user.id, true)
       // 文本输入获取焦点
       sendMsgRef.value.focus()
-      data.enterMsg = ''
     }
     // 群聊点击事件
     function groupClick(group) {
+      // 点击自己不需要清空输入内容
+      if (data.toGroupId !== group.id) {
+        data.enterMsg = ''
+      }
       data.group = group
       data.toGroupId = group.id
-      getGroupChatMsg()
-      cancelPoint(group.id, false)
+      // getGroupChatMsg()
+      // cancelPoint(group.id, false)
+      store.dispatch('group/getGroupChatMsg', group.id)
       // 文本输入获取焦点
       sendMsgRef.value.focus()
-      data.enterMsg = ''
     }
     // webscoket  初始化连接
     function scoketInit() {
@@ -454,9 +370,12 @@ export default {
     }
     // 获取图片地址
     function getFileNmae(file_url) {
-      // data.imgUrl = file_url
       data.enterMsg = file_url
       sendMsg(2)
+    }
+    // 创建群聊成功事件
+    function createGroupSuccess() {
+      getGroupNewList()
     }
     return {
       ...toRefs(data),
@@ -471,8 +390,8 @@ export default {
       changeChatMsg,
       getLook,
       sendMsgRef,
-      cancelPointClick,
       getFileNmae,
+      createGroupSuccess,
       // handleInput,
     }
   },
@@ -561,6 +480,39 @@ export default {
       overflow-y: auto;
       top: 61px;
       bottom: 151px;
+    }
+    .mask {
+      position: absolute;
+      background-color: #000;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0;
+      opacity: .1;
+      z-index: 9999;
+    }
+    .msg-mask {
+      position: absolute;
+      background-color: #fff;
+      top: 0;
+      right: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      p{
+        line-height: 40px;
+        height: 40px;
+        font-size: 22px;
+        text-align: center;
+      }
+      img{
+        width: 80%;
+        height: auto;
+      }
     }
     .enter {
       width: 100%;

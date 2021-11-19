@@ -7,6 +7,7 @@
         class="el-menu-vertical-demo"
         :collapse="true"
         background-color="#2e2e2e"
+        text-color="#8a8a8a"
         @select="listSelect"
       >
         <el-menu-item index="1">
@@ -14,10 +15,16 @@
           <template #title>我的好友</template>
         </el-menu-item>
         <el-menu-item index="2">
-          <i class="el-icon-setting"></i>
+          <i class="el-icon-menu"></i>
           <template #title>我的群聊</template>
         </el-menu-item>
       </el-menu>
+      <div class="tool">
+        <ul>
+          <li>设置</li>
+          <li>消息</li>
+        </ul>
+      </div>
     </div>
     <div class="chat-list">
       <div class="search-wrap">

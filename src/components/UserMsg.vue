@@ -37,7 +37,7 @@
             <img :src="item.avatar" alt="">
           </div>
           <div class="name">
-            {{item.user_id}}
+            {{item.name}}
           </div>
         </li>
       </ul>

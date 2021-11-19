@@ -19,14 +19,27 @@
     </div>
     <!-- 添加好友 -->
     <el-dialog v-model="isAddFriend" top="30%" title="添加好友">
-      <div class="friend_input">
-        <el-input
-          v-model="friendNmae"
-          size="small"
-          placeholder="请输入用户名！"
-        />
+      <div class="search-top">
+        <div class="friend_input">
+          <el-input
+            v-model="friendNmae"
+            size="small"
+            placeholder="请输入用户名！"
+          />
+        </div>
+        <el-button type="primary" size="mini" @click="lookupClick">立即查找</el-button>
       </div>
-      <el-button type="primary" size="mini">立即查找</el-button>
+      <div class="search-data">
+        <ul>
+          <li v-for="item in searchUsers" :key="item.id">
+            <div class="photo">
+              <img :src="item.avatar" alt="" />
+              <div class="name">{{ item.name }}</div>
+            </div>
+            <el-button type="primary" size="mini" class="target" @click="addClick(item)">立即添加</el-button>
+          </li>
+        </ul>
+      </div>
     </el-dialog>
     <!-- 创建群聊 -->
     <el-dialog v-model="isAddGroup" width="600px" top="15%" title="创建群聊">
@@ -91,6 +104,7 @@ import { computed, reactive, toRefs } from '@vue/reactivity'
 import { useStore } from 'vuex'
 import { createGroup } from '@/api/createChat.js'
 import { ElMessage } from 'element-plus'
+import { selectUserList,sendFriendRequest } from '@/api/createChat.js'
 export default {
   emits: [],
   setup(props, { emit }) {
@@ -107,6 +121,8 @@ export default {
       // 全选
       checkAll: false,
       groupName: '',
+      // 查找的好友
+      searchUsers: [],
     })
 
     // 添加聊天点击事件
@@ -135,6 +151,16 @@ export default {
       const checkedCount = value.length
       data.checkAll = checkedCount === data.userList.length
     }
+    // 查找好友
+    function lookupClick(){
+      console.log(data.friendNmae);
+      selectUserList({
+        name: store.state.userInfo.id
+      }).then( res => {
+        console.log(res);
+        data.searchUsers = res.data.list
+      })
+    }
     const users = computed(() => {
       let userList = data.userList.filter((item) => {
         return data.checkedLists.indexOf(item.id) >= 0
@@ -143,7 +169,7 @@ export default {
     })
     // 创建群聊
     function createGroupClick() {
-      if(data.groupName === ''){
+      if (data.groupName === '') {
         ElMessage({
           showClose: true,
           message: '请填写群聊名！',
@@ -162,25 +188,37 @@ export default {
       createGroup({
         group_name: data.groupName,
         user_id: data.checkedLists,
-      }).then((res) => {
-        console.log(res)
-        data.isAddGroup = false
-        if(res.code === 200){
-          ElMessage({
-            showClose: true,
-            message: res.message,
-            type: 'success',
-          })
-          emit('createGroupSuccess')
-        } else {
-          ElMessage({
-            showClose: true,
-            message: res.message,
-            type: 'success',
-          })
-        }
-      }).cahch( err => {
-        console.log(err);
+      })
+        .then((res) => {
+          console.log(res)
+          data.isAddGroup = false
+          if (res.code === 200) {
+            ElMessage({
+              showClose: true,
+              message: res.message,
+              type: 'success',
+            })
+            emit('createGroupSuccess')
+          } else {
+            ElMessage({
+              showClose: true,
+              message: res.message,
+              type: 'success',
+            })
+          }
+        })
+        .cahch((err) => {
+          console.log(err)
+        })
+    }
+    // 添加好友
+    function addClick(user){
+      console.log(user);
+      sendFriendRequest({
+        information: '我是你',
+        f_id: user.id
+      }).then( res => {
+        console.log(res);
       })
     }
     return {
@@ -192,6 +230,8 @@ export default {
       handleCheckedChange,
       users,
       createGroupClick,
+      lookupClick,
+      addClick
     }
   },
 }
@@ -252,9 +292,61 @@ export default {
       }
     }
   }
-  .friend_input {
-    width: 60%;
-    margin: 0 auto 30px;
+  .search-top {
+    display: flex;
+    // justify-content: space-between;
+    .friend_input {
+      width: 60%;
+      margin-right: 10px;
+    }
+  }
+  .search-data {
+    ul {
+      overflow: hidden;
+      padding: 15px;
+      li {
+        width: 20%;
+        float: left;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+        padding: 0 5px;
+        .photo {
+          width: 100%;
+          overflow: hidden;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          img {
+            width: 100%;
+            height: auto;
+          }
+          .name {
+            width: 100%;
+            line-height: 25px;
+            font-size: 16px;
+            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            background-color: #000;
+            opacity: .6;
+            color: #fff
+          }
+        }
+        .target {
+          width: 100%;
+          font-size: 12px;
+          margin-top: 5px;
+        }
+      }
+    }
   }
 }
 .box {

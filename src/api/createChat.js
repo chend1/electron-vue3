@@ -8,7 +8,7 @@ export function createGroup(params) {
 
 // 非好友用户列表
 export function selectUserList(params) {
-  return request.get('/UserList', { params })
+  return request.get('/UsersList', { params })
 }
 
 // 发送添加好友请求

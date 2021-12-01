@@ -9,6 +9,7 @@ const request = axios.create({
 // 请求响应前拦截
 request.interceptors.request.use( config => {
   // 每个请求携带token
+  console.log(config);
   const token = localStorage.getItem('token')
   if(token != '' && token != undefined){
     config.headers.Authorization = 'Bearer ' + token

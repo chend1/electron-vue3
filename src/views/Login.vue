@@ -139,6 +139,7 @@ export default {
           login({
             name: data.ruleForm.account,
             password: data.ruleForm.password,
+            client_type: 0
           }).then((res) => {
             store.commit('getUserInfo',res.data)
             router.push({
@@ -148,11 +149,16 @@ export default {
         }
       })
     }
+    //第三方登录
+    function weiboLogin(){
+      console.log(333);
+    }
     return {
       ...toRefs(data),
       rules,
       formRef,
       loginClick,
+      weiboLogin
     }
   },
 }

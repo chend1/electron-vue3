@@ -155,7 +155,7 @@ export default {
     function lookupClick(){
       console.log(data.friendNmae);
       selectUserList({
-        name: store.state.userInfo.id
+        // name: store.state.userInfo.id
       }).then( res => {
         console.log(res);
         data.searchUsers = res.data.list

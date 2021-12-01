@@ -20,3 +20,8 @@ export function sendFriendRequest(params) {
 export function byFriendRequest(params) {
   return request.post('/ByFriendRequest', qs.stringify(params))
 }
+
+// 获取好友申请记录
+export function getFriendForRecord(params) {
+  return request.get('/GetFriendForRecord', { params })
+}

@@ -9,6 +9,10 @@
     background-color: #ecebeb !important;
     color: #000 !important;
   }
+  ul,li,h1,h2,h3{
+    margin: 0;
+    padding: 0;
+  }
 
   .vue3-emojipicker .bg-grey-400,
   .vue3-discord-emojipicker__tabs,

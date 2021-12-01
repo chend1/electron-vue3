@@ -20,10 +20,7 @@
         </el-menu-item>
       </el-menu>
       <div class="tool">
-        <ul>
-          <li>设置</li>
-          <li>消息</li>
-        </ul>
+        <NavFooter></NavFooter>
       </div>
     </div>
     <div class="chat-list">
@@ -95,6 +92,7 @@
 
 <script>
 import Head from '@/components/Head.vue'
+import NavFooter from '@/components/NavFooter.vue'
 import GroupList from '@/components/GroupList.vue'
 import UserList from '@/components/UserList.vue'
 import Search from '@/components/Search.vue'
@@ -110,6 +108,7 @@ export default {
   name: 'Chat',
   components: {
     Head,
+    NavFooter,
     GroupList,
     UserList,
     Search,
@@ -421,9 +420,16 @@ export default {
     background-color: #2e2e2e;
     color: #aaa;
     box-sizing: border-box;
+    position: relative;
     .el-menu-vertical-demo {
       width: 60px;
       border-right: none;
+    }
+    .tool{
+      width: 100%;
+      position: absolute;
+      bottom: 10px;
+      left: 0;
     }
   }
   .chat-list {

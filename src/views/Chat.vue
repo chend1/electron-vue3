@@ -502,7 +502,7 @@ export default {
       left: 0;
       bottom: 0;
       opacity: .1;
-      z-index: 9999;
+      z-index: 999;
     }
     .msg-mask {
       position: absolute;
@@ -511,7 +511,7 @@ export default {
       right: 0;
       left: 0;
       bottom: 0;
-      z-index: 9999;
+      z-index: 999;
       display: flex;
       justify-content: center;
       align-items: center;

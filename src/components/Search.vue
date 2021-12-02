@@ -27,7 +27,9 @@
             placeholder="请输入用户名！"
           />
         </div>
-        <el-button type="primary" size="mini" @click="lookupClick">立即查找</el-button>
+        <el-button type="primary" size="mini" @click="lookupClick"
+          >立即查找</el-button
+        >
       </div>
       <div class="search-data">
         <ul>
@@ -36,7 +38,13 @@
               <img :src="item.avatar" alt="" />
               <div class="name">{{ item.name }}</div>
             </div>
-            <el-button type="primary" size="mini" class="target" @click="addClick(item)">立即添加</el-button>
+            <el-button
+              type="primary"
+              size="mini"
+              class="target"
+              @click="addClick(item)"
+              >立即添加</el-button
+            >
           </li>
         </ul>
       </div>
@@ -104,7 +112,7 @@ import { computed, reactive, toRefs } from '@vue/reactivity'
 import { useStore } from 'vuex'
 import { createGroup } from '@/api/createChat.js'
 import { ElMessage } from 'element-plus'
-import { selectUserList,sendFriendRequest } from '@/api/createChat.js'
+import { selectUserList, sendFriendRequest } from '@/api/createChat.js'
 export default {
   emits: [],
   setup(props, { emit }) {
@@ -132,6 +140,7 @@ export default {
     // 添加好友
     function addFriend() {
       data.isAddFriend = true
+      lookupClick()
     }
     // 添加群聊
     function addGroup() {
@@ -152,12 +161,9 @@ export default {
       data.checkAll = checkedCount === data.userList.length
     }
     // 查找好友
-    function lookupClick(){
-      console.log(data.friendNmae);
-      selectUserList({
-        // name: store.state.userInfo.id
-      }).then( res => {
-        console.log(res);
+    function lookupClick() {
+      console.log(data.friendNmae)
+      selectUserList().then((res) => {
         data.searchUsers = res.data.list
       })
     }
@@ -212,13 +218,18 @@ export default {
         })
     }
     // 添加好友
-    function addClick(user){
-      console.log(user);
+    function addClick(user) {
+      console.log(user)
       sendFriendRequest({
-        information: '我是你',
-        f_id: user.id
-      }).then( res => {
-        console.log(res);
+        information: data.information ? data.information : '好友请求',
+        f_id: user.id,
+      }).then((res) => {
+        console.log(res)
+        ElMessage({
+          showClose: true,
+          message: '好友请求发送成功',
+          type: 'success',
+        })
       })
     }
     return {
@@ -231,7 +242,7 @@ export default {
       users,
       createGroupClick,
       lookupClick,
-      addClick
+      addClick,
     }
   },
 }
@@ -303,7 +314,7 @@ export default {
   .search-data {
     ul {
       overflow: hidden;
-      padding: 15px;
+      padding: 15px 0px;
       li {
         width: 20%;
         float: left;
@@ -314,7 +325,9 @@ export default {
         box-sizing: border-box;
         padding: 0 5px;
         .photo {
-          width: 100%;
+          width: 80%;
+          margin: 0 auto;
+          height: 72px;
           overflow: hidden;
           display: flex;
           align-items: center;
@@ -336,8 +349,8 @@ export default {
             left: 0;
             bottom: 0;
             background-color: #000;
-            opacity: .6;
-            color: #fff
+            opacity: 0.6;
+            color: #fff;
           }
         }
         .target {

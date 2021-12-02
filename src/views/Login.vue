@@ -186,6 +186,8 @@ export default {
   box-shadow: 0 2px 10px #999;
   -moz-box-shadow: #999 0 2px 10px;
   -webkit-box-shadow: #999 0 2px 10px;
+  box-sizing: border-box;
+  padding: 20px 0;
 }
 @media screen and (max-width: 750px) {
   .login-app {

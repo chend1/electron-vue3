@@ -166,59 +166,10 @@ export default {
     function getGroupNewList() {
       store.dispatch('group/getGroupList')
     }
-    // 更新聊天列表 type true 用户  false 群聊
-    // function changChatList(list, type) {
-    //   console.log(222222222222, list)
-    //   if (type) {
-    //     // console.log(111);
-    //   } else {
-    //     let list_group = data.chatGroupList.map((item) => {
-    //       // 判断是不是接收者,接收者添加提示信息
-    //       if (
-    //         item.id === list.to_id &&
-    //         store.state.userInfo.id !== list.from_id
-    //       ) {
-    //         if (item.pointData[0] instanceof Object) {
-    //           item.pointData = []
-    //         }
-    //         if (list.msg_type === 1) {
-    //           item.pointData.push(list.msg)
-    //         }
-    //         if (list.msg_type) {
-    //           item.pointData.push('[图片]')
-    //         }
-    //       }
-    //       // 判断是不是发送者 发送者覆盖提示信息
-    //       if (
-    //         item.id === list.to_id &&
-    //         store.state.userInfo.id === list.from_id
-    //       ) {
-    //         if (list.msg_type === 2) {
-    //           item.pointData = [{ type: true, msg: '[图片]' }]
-    //         }
-    //         if (list.msg_type === 1) {
-    //           item.pointData = [{ type: true, msg: list.msg }]
-    //         }
-    //       }
-    //       return item
-    //     })
-    //     data.chatGroupList = list_group
-    //   }
-    // }
     // 取消聊天列表提示信息
     // function cancelPoint(id, type) {
     //   console.log(type, id)
     //   if (type) {
-    //     // let userList = data.friendList.map((item) => {
-    //     //   // item.pointData = []
-    //     //   if (item.id === id && !(item.pointData[0] instanceof Object)) {
-    //     //     item.pointData[0] = {
-    //     //       msg: item.pointData[item.pointData.length - 1],
-    //     //     }
-    //     //   }
-    //     //   return item
-    //     // })
-    //     // data.friendList = userList
     //   } else {
     //     let groupList = data.chatGroupList.map((item) => {
     //       if (item.id === id && !(item.pointData[0] instanceof Object)) {

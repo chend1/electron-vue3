@@ -33,6 +33,20 @@ export const userModule = {
       state.userChatList = userChatList
       localStorage.setItem('userChatList', JSON.stringify(userChatList))
     },
+    // 清除聊天提醒
+    clearPointMsg(state, toId) {
+      let userList = state.userList.map((item) => {
+        // item.pointData = []
+        if (item.id === toId && !(item.pointData[0] instanceof Object)) {
+          item.pointData[0] = {
+            msg: item.pointData[item.pointData.length - 1],
+          }
+        }
+        return item
+      })
+      state.userList = userList
+      localStorage.setItem('userList', JSON.stringify(userList))
+    },
   },
   actions: {
     // 获取用户聊天信息
@@ -56,21 +70,38 @@ export const userModule = {
       }
     },
     // 获取用户列表
-    getUserList(context) {
-      getUserList().then((res) => {
-        let userList = res.data.list.map((user) => {
-          user.pointData = []
-          return user
-        })
+    getUserList(context, user) {
+      let userList = context.state.userList
+      if (userList.length > 0) {
+        if (user) {
+          user.name = user.users.name
+          user.id = user.users.id
+          user.avatar = user.users.avatar
+          user.pointData = ['好友添加成功']
+          userList.unshift(user)
+        }
         context.commit('getUserList', userList)
-      })
+      } else {
+        getUserList().then((res) => {
+          let userList = res.data.list.map((user) => {
+            user.pointData = []
+            return user
+          })
+          context.commit('getUserList', userList)
+        })
+      }
     },
     // 添加聊天消息
     addUserChatMsg({ commit, state, rootState }, message) {
       // 查找存储在本地的聊天记录
       let chatList = state.userChatList
       let index = chatList.findIndex((item) => {
-        return item.user.id === message.to_id
+        // 判断是不是发送者
+        if (rootState.userInfo.id === message.from_id) {
+          return item.user.id === message.to_id
+        } else {
+          return item.user.id === message.from_id
+        }
       })
       console.log(chatList, index, message)
       let chatMsg = {}
@@ -102,7 +133,7 @@ export const userModule = {
           if (message.msg_type === 1) {
             item.pointData.push(message.msg)
           }
-          if (message.msg_type) {
+          if (message.msg_type === 2) {
             item.pointData.push('[图片]')
           }
         }

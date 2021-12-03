@@ -1,7 +1,7 @@
 <template>
   <div class="nav-footer">
     <ul>
-      <li @click.stop="handleMessageClick">
+      <li @click.stop="handleMessageClick" :class="{ pointW: isPoint }">
         <!-- 消息提醒 -->
         <svg
           class="icon"
@@ -36,20 +36,20 @@
     <div class="message" v-if="isMsg">
       <h2>好友请求列表：</h2>
       <ul>
-        <li>
+        <li v-for="item in friendList" :key="item.id">
           <div class="pic">
-            <img src="@/assets/image/photo.jpg" alt="" />
+            <img :src="item.users.avatar" alt="" />
           </div>
           <div class="detail">
-            <p class="name">用户名：张三</p>
-            <p class="cnt">附加消息：555555555555555555555555555555555555555</p>
+            <p class="name">用户名：{{ item.users.name }}</p>
+            <p class="cnt">附加消息：{{ item.information }}</p>
           </div>
           <div class="tool">
-            <div class="t" v-if="!isOperation">
-              <span @click="agreeClick">同意</span> 
-              <span @click="refuseClick">拒绝</span>
+            <div class="t" v-if="item.isOperation">
+              <span @click="agreeClick(item)">同意</span>
+              <span @click="refuseClick(item)">拒绝</span>
             </div>
-            <div class="point" v-else>{{pointMsg}}</div>
+            <div class="point" v-else>{{ item.pointMsg }}</div>
           </div>
         </li>
       </ul>
@@ -65,19 +65,22 @@
 
 <script>
 import { onMounted, reactive, toRefs } from 'vue-demi'
-import { getFriendForRecord } from '@/api/createChat.js'
+import { getFriendForRecord, byFriendRequest } from '@/api/createChat.js'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
 export default {
   setup() {
+    const store = useStore()
     let data = reactive({
       isMsg: false,
       isTool: false,
-      isOperation: false,
-      pointMsg: '已同意'
+      friendList: [],
+      isPoint: false,
     })
     const router = useRouter()
     // 消息展示
     function handleMessageClick() {
+      data.isPoint = false
       data.isTool = false
       data.isMsg = !data.isMsg
     }
@@ -87,27 +90,62 @@ export default {
       data.isTool = !data.isTool
     }
     // 同意好友请求
-    function agreeClick(){
-      data.isOperation = true
-      this.pointMsg = '已同意'
+    function agreeClick(user) {
+      let params = {
+        information: '同意好友请求',
+        id: user.id,
+        status: 1,
+      }
+      let index = data.friendList.findIndex((item) => {
+        return item.id === user.id
+      })
+      data.friendList.splice(index, 1)
+      user.pointMsg = '已同意'
+      user.isOperation = false
+      data.friendList.push(user)
+      byFriendRequest(params).then((res) => {
+        console.log(res)
+        store.dispatch('user/getUserList', user)
+      })
     }
     // 拒绝好友请求
-    function refuseClick(){
-      data.isOperation = true
-      this.pointMsg = '已拒绝'
+    function refuseClick(user) {
+      let params = {
+        information: '拒绝好友请求',
+        id: user.id,
+        status: 0,
+      }
+      let index = data.friendList.findIndex((item) => {
+        return item.id === user.id
+      })
+      data.friendList.splice(index, 1)
+      user.pointMsg = '已拒绝'
+      user.isOperation = false
+      data.friendList.push(user)
+      byFriendRequest(params).then((res) => {
+        console.log(res)
+      })
     }
     // 获取好友请求列表
-    onMounted( () => {
-      console.log(222);
-      getFriendForRecord().then( res => {
-        console.log(res);
+    onMounted(() => {
+      getFriendForRecord().then((res) => {
+        console.log(res)
+        if (res.data.length) {
+          data.isPoint = true
+        }
+        let list = res.data.map((item) => {
+          item.pointMsg = ''
+          item.isOperation = true
+          return item
+        })
+        data.friendList = list
       })
     })
     // 退出账号
-    function signOutClick(){
-      localStorage.clear();
+    function signOutClick() {
+      localStorage.clear()
       router.push({
-        path: '/login'
+        path: '/login',
       })
       // localStorage.removeItem('token')
       // localStorage.removeItem('userInfo')
@@ -127,7 +165,7 @@ export default {
       handleToolClick,
       signOutClick,
       agreeClick,
-      refuseClick
+      refuseClick,
     }
   },
 }
@@ -197,6 +235,14 @@ export default {
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
+          margin: 5px 0;
+        }
+        .name {
+          color: #666;
+        }
+        .cnt {
+          color: #999;
+          font-size: 12px;
         }
       }
       .tool {
@@ -209,7 +255,7 @@ export default {
           font-size: 12px;
           cursor: pointer;
         }
-        .point{
+        .point {
           font-size: 12px;
           color: #999;
         }
@@ -228,14 +274,27 @@ export default {
   left: 65px;
   z-index: 9999;
   cursor: pointer;
-  ul{
-    li{
+  ul {
+    li {
       padding: 10px 20px;
       width: auto;
       height: auto;
       white-space: nowrap;
       margin: 0;
     }
+  }
+}
+.pointW {
+  position: relative;
+  &::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #409efe;
+    position: absolute;
+    top: 0;
+    right: 0;
   }
 }
 </style>

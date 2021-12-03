@@ -60,6 +60,7 @@ export default {
       data.isActive = user.id
       context.emit('userClick', user)
       store.commit('getUserId', user.id)
+      store.commit('user/clearPointMsg', user.id)
     }
     
     onMounted(() => {
@@ -70,19 +71,6 @@ export default {
         context.emit('userClick', user[0])
       }
     })
-    // onMounted(() => {
-    //   // 默认用户
-    // })
-    // if (data.userList[0]) {
-    //   // data.isActive = data.userList[0].id
-    //   // store.dispatch('user/getUserChatMsg', data.userList[0].id)
-    //   // context.emit('userClick', data.userList[0])
-    // }
-    // nextTick(() => {
-    //   data.isActive = data.userList[0].id
-    //   store.dispatch('user/getUserChatMsg', data.userList[0].id)
-    //   context.emit('userClick', data.userList[0])
-    // })
     return {
       ...toRefs(data),
       userClick,

@@ -17,6 +17,7 @@ async function createWindow() {
   const win = new BrowserWindow({
     width: 1000,
     height: 840,
+    frame:false,
     // 隐藏菜单栏
     // autoHideMenuBar: true,
     minWidtht: 1000,

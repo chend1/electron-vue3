@@ -51,7 +51,7 @@
       <div class="message" ref="scrollMsg">
         <div class="msg-mask" v-if="isMask">
           <p>点击左侧开始聊天</p>
-          <img src="@/assets/image/chat.gif" alt="">
+          <img src="@/assets/image/chat.gif" alt="" />
         </div>
         <chat-message
           :toId="!isGroup ? toUserId : toGroupId"
@@ -104,6 +104,7 @@ import Look from '@/components/Look.vue'
 import { computed, reactive, ref, toRefs } from '@vue/reactivity'
 import { onMounted } from '@vue/runtime-core'
 import { useStore } from 'vuex'
+import { notice } from '@/tools/notification.js'
 export default {
   name: 'Chat',
   components: {
@@ -198,6 +199,9 @@ export default {
             // 更新聊天信息
             // getUserChatMsg()
             console.log(2222, userInfo)
+            if (userInfo.from_id != this.user.id) {
+              notice('您收到一条消息:', userInfo.msg, '')
+            }
             store.dispatch('user/addUserChatMsg', userInfo)
             // changChatList(userInfo, true)
           } else {
@@ -240,12 +244,14 @@ export default {
       sendMsgRef.value.focus()
     })
     // 判断遮罩是否显示
-    data.isMask = computed( () => {
-      let res = (data.toUserId == -1 && !store.state.isGroup) || (data.toGroupId == -1 && store.state.isGroup);
-      if(res){
+    data.isMask = computed(() => {
+      let res =
+        (data.toUserId == -1 && !store.state.isGroup) ||
+        (data.toGroupId == -1 && store.state.isGroup)
+      if (res) {
         sendMsgRef.value && sendMsgRef.value.blur()
       }
-      return res;
+      return res
     })
     // 用户点击事件
     function userClick(user) {
@@ -379,7 +385,7 @@ export default {
       width: 60px;
       border-right: none;
     }
-    .tool{
+    .tool {
       width: 100%;
       position: absolute;
       bottom: 10px;
@@ -455,7 +461,7 @@ export default {
       right: 0;
       left: 0;
       bottom: 0;
-      opacity: .1;
+      opacity: 0.1;
       z-index: 999;
     }
     .msg-mask {
@@ -470,13 +476,13 @@ export default {
       justify-content: center;
       align-items: center;
       flex-wrap: wrap;
-      p{
+      p {
         line-height: 40px;
         height: 40px;
         font-size: 22px;
         text-align: center;
       }
-      img{
+      img {
         width: 80%;
         height: auto;
       }

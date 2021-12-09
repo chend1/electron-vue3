@@ -5,7 +5,7 @@
     element-loading-text="授权登录中..."
     element-loading-spinner="el-icon-loading"
   >
-    <el-container class="login-container">
+    <el-container class="login-container" v-if="isLogin">
       <el-form
         :model="ruleForm"
         ref="formRef"
@@ -26,8 +26,7 @@
             v-model="ruleForm.password"
           ></el-input>
         </el-form-item>
-        <p>第三方登录</p>
-        <div class="ouath-login">
+        <!-- <div class="ouath-login">
           <svg
             @click="weiboLogin"
             t="1624525865244"
@@ -59,14 +58,72 @@
               fill="#d81e06"
             ></path>
           </svg>
-        </div>
+        </div> -->
         <el-form-item class="login-btn">
           <el-button @click="loginClick" type="primary" style="width: 300px"
             >登录</el-button
           >
         </el-form-item>
+        <div class="register">
+          <el-button
+            @click="registerClick"
+            type="primary"
+            plain
+            style="width: 300px"
+            >点击注册</el-button
+          >
+        </div>
       </el-form>
     </el-container>
+    <div class="login-container register" v-else>
+      <p>用户注册</p>
+      <el-form
+        :model="registerForm"
+        ref="registerFormRef"
+        :rules="registerRules"
+        label-width="80px"
+        class="register-form"
+      >
+        <el-form-item label="账号" prop="name">
+          <el-input type="text" v-model="registerForm.name"></el-input>
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input type="text" v-model="registerForm.email"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input type="password" v-model="registerForm.password"></el-input>
+        </el-form-item>
+        <el-form-item label="确认密码" prop="password_confirm">
+          <el-input
+            type="password"
+            v-model="registerForm.password_confirm"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="验证码" prop="code">
+          <div class="yzm">
+            <el-input
+              type="text"
+              v-model="registerForm.code"
+            ></el-input>
+            <el-button
+              @click="getEmailCode"
+              @keyup.enter="handleRegister"
+              :disabled="timeOut !== 0"
+              type="primary"
+              size="mini"
+              class="code"
+              >获取验证码<span v-if="timeOut>0">&nbsp;{{timeOut}}</span></el-button
+            >
+          </div>
+        </el-form-item>
+        <div class="register-btn">
+          <el-button @click="goBackClick" type="primary">返回登录</el-button>
+          <el-button @click="handleRegister" type="primary" plain
+            >确认注册</el-button
+          >
+        </div>
+      </el-form>
+    </div>
   </div>
 </template>
 
@@ -76,19 +133,30 @@
 import { reactive, ref, toRefs } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { login } from '@/api/login.js'
-
+import { login, register, getCode } from '@/api/login.js'
+import { ElMessage } from 'element-plus'
 export default {
   name: 'Login',
   setup() {
     // 获取表单ref
     let formRef = ref(null)
+    let registerFormRef = ref(null)
     let data = reactive({
       loginLoading: false,
       ruleForm: {
-        account: 'admin',
-        password: '123456',
+        account: '',
+        password: '',
       },
+      registerForm: {
+        name: '',
+        email: '',
+        password: '',
+        password_confirm: '',
+        code: '',
+      },
+      isLogin: true,
+      registerRules: {},
+      timeOut: 0
     })
     // 登录验证
     let validateAccount = (rule, value, callback) => {
@@ -102,7 +170,7 @@ export default {
           ) {
             callback(new Error('长度在 3 到 20 个字符'))
           } else {
-            formRef.value.validateField('checkPass')
+            formRef.value.validateField('account')
           }
           callback()
         }
@@ -118,7 +186,7 @@ export default {
         ) {
           callback(new Error('长度在 3 到 20 个字符'))
         } else {
-          formRef.value.validateField('checkPass')
+          formRef.value.validateField('password')
         }
         callback()
       }
@@ -126,6 +194,74 @@ export default {
     let rules = {
       account: [{ validator: validateAccount, trigger: 'blur' }],
       password: [{ validator: validatePass, trigger: 'blur' }],
+    }
+    // 注册规则
+    let password_confirm = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请确认密码'))
+      } else {
+        if (data.registerForm.password !== data.registerForm.password_confirm) {
+          callback(new Error('请检查密码是否正确'))
+        } else {
+          registerFormRef.value.validateField('password_confirm')
+        }
+        callback()
+      }
+    }
+    data.registerRules = {
+      name: [
+        {
+          required: true,
+          message: '请输入用户名',
+          trigger: 'blur',
+        },
+        {
+          min: 3,
+          max: 20,
+          message: '用户名长度需要在3~20之间',
+          trigger: 'blur',
+        },
+      ],
+      email: [
+        {
+          required: true,
+          message: '请输入邮箱',
+          trigger: 'blur',
+        },
+        {
+          type: 'email',
+          message: '请输入正确的邮箱',
+          trigger: 'blur',
+        },
+      ],
+      password: [
+        {
+          required: true,
+          message: '请输入密码',
+          trigger: 'blur',
+        },
+        {
+          min: 6,
+          max: 20,
+          message: '密码长度需要在6~20之间',
+          trigger: 'blur',
+        },
+      ],
+      password_confirm: [
+        {
+          required: true,
+          message: '请确认密码',
+          trigger: 'blur',
+        },
+        { validator: password_confirm, trigger: 'blur' },
+      ],
+      code: [
+        {
+          required: true,
+          message: '请输入验证码',
+          trigger: 'blur',
+        },
+      ],
     }
     // 获取路由
     const router = useRouter()
@@ -139,9 +275,14 @@ export default {
           login({
             name: data.ruleForm.account,
             password: data.ruleForm.password,
-            client_type: 0
+            client_type: 0,
           }).then((res) => {
-            store.commit('getUserInfo',res.data)
+            store.commit('getUserInfo', res.data)
+            ElMessage({
+              showClose: true,
+              message: '登录成功',
+              type: 'success',
+            })
             router.push({
               path: '/chat',
             })
@@ -149,16 +290,64 @@ export default {
         }
       })
     }
-    //第三方登录
-    function weiboLogin(){
-      console.log(333);
+    //注册
+    function registerClick() {
+      data.isLogin = false
+    }
+    // 确认注册
+    function handleRegister() {
+      registerFormRef.value.validate((valid) => {
+        if (valid) {
+          register(data.registerForm).then((res) => {
+            console.log(res)
+            ElMessage({
+              showClose: true,
+              message: '注册成功，请重新登录',
+              type: 'success',
+            })
+            goBackClick()
+          })
+        }
+      })
+    }
+    // 返回登录
+    function goBackClick() {
+      data.isLogin = true
+    }
+    // 获取邮箱验证码
+    function getEmailCode() {
+      if (!data.registerForm.email) {
+        ElMessage({
+          showClose: true,
+          message: '请填写邮箱！',
+          type: 'warning',
+        })
+        return;
+      }
+      data.timeOut = 60;
+      let timer = setInterval(() => {
+        data.timeOut--
+        if(data.timeOut === 0){
+          clearInterval(timer)
+        }
+      }, 1000);
+      getCode({
+        email: data.registerForm.email,
+      }).then((res) => {
+        console.log(res)
+      })
     }
     return {
       ...toRefs(data),
       rules,
       formRef,
+      registerFormRef,
       loginClick,
-      weiboLogin
+      registerClick,
+      goBackClick,
+      handleRegister,
+      getCode,
+      getEmailCode,
     }
   },
 }
@@ -252,5 +441,49 @@ export default {
 }
 .footer a {
   color: #fff;
+}
+.login-btn {
+  margin-top: 50px;
+}
+.register {
+  box-sizing: border-box;
+  padding: 0 10px;
+  p {
+    font-size: 1.6em;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .register-form {
+    width: 96%;
+    margin: 0px 2%;
+  }
+
+  /deep/.el-input,
+  .el-form-item__content {
+    line-height: 30px;
+  }
+  /deep/.el-input__inner {
+    height: 30px;
+    line-height: 30px;
+  }
+  /deep/.el-form-item {
+    margin-bottom: 10px;
+  }
+  /deep/.el-form-item__error {
+    padding-top: 0;
+  }
+  .register-btn {
+    display: flex;
+    width: 100%;
+    margin-top: 20px;
+    justify-content: space-around;
+  }
+}
+.yzm {
+  display: flex;
+  margin-top: 5px;
+  .code {
+    margin-left: 20px;
+  }
 }
 </style>

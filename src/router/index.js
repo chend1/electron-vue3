@@ -50,7 +50,14 @@ router.beforeEach((to, from, next) => {
       name: 'Login'
     })
   } else {
-    next()
+    if(to.fullPath === '/login' && store.state.token){
+      next({
+        name: 'Chat'
+      })
+    } else{
+      next()
+    }
+
   }
 })
 

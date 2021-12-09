@@ -11,7 +11,7 @@
             添加
           </div>
         </li>
-        <li>
+        <li v-if="userMsg.avatar">
           <div class="photo">
             <img :src="userMsg.avatar" alt="">
           </div>
@@ -66,6 +66,8 @@ export default {
 <style lang="less" scoped>
 .user-msg{
   width: 100%;
+  height: 700px;
+  border-bottom: 1px solid #ddd;
   .user,.group{
     width: 100%;
     .add{

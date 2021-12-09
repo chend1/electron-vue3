@@ -357,8 +357,11 @@ export default {
 
 <style scoped lang="less">
 .chat-wrap {
-  width: 1000px;
-  height: 800px;
+  width: 100%;
+  height: 100%;
+  min-width: 600px;
+  min-height: 800px;
+  overflow: auto;
   position: fixed;
   top: 50%;
   left: 50%;
@@ -423,15 +426,15 @@ export default {
         }
         .userMsg {
           position: absolute;
-          top: 0;
-          left: 100%;
+          top: 60px;
+          right: 0;
           background-color: #fff;
           z-index: 999;
           width: 0;
-          height: 800px;
           border-left: 1px solid #ddd;
           transition: all 0.3s;
           overflow: hidden;
+          z-index: 9998;
           &.active {
             width: 300px;
           }
